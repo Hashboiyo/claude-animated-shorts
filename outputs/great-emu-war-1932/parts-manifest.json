@@ -1,0 +1,28 @@
+{
+  "filename": "great-emu-war-1932.mp4",
+  "path": "/workspace/shorts-dev/output/great-emu-war-1932.mp4",
+  "bytes": 143278887,
+  "sha256": "8ece1c732f0ac5380971c67ee95d38ee0ae0cae18a00c361f1e4fe850cae3c92",
+  "duration_seconds": 66.0,
+  "width": 1440,
+  "height": 2560,
+  "fps": "30/1",
+  "frames": "1980",
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "sample_rate": "48000",
+  "channels": 2,
+  "composition": "EmuWarShort",
+  "parts": [
+    {
+      "name": "great-emu-war-1932.mp4.part001",
+      "bytes": 75000000,
+      "sha256": "2a12139ece555c07d63f292aec33599c490022cf0ae114cf1e88f70620e81db7"
+    },
+    {
+      "name": "great-emu-war-1932.mp4.part002",
+      "bytes": 68278887,
+      "sha256": "10e349bb63993d72aba1b09ee57d7f99825a578f7a5ffbefbe188c1af3d97c87"
+    }
+  ]
+}
