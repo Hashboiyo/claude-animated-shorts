@@ -1,0 +1,91 @@
+{
+  "filename": "cobra-effect-final.mp4",
+  "size": 107346849,
+  "sha256": "6a173851976189b326a04cc34704ce51320522706325e9d236fc40036a4c41a6",
+  "parts": [
+    {
+      "name": "cobra-effect-final.mp4.part001",
+      "size": 8000000,
+      "sha256": "320c27a15660241f6237858750535a61ce8b4002f477db9870a498a4f8b36fee",
+      "git_sha": "227e103d3a38260c098490769cb3649ce25fd23b"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part002",
+      "size": 8000000,
+      "sha256": "148be9352a3d427c69a72a8b12ce04207b913b7a8e1447d8498114b68f02e4cb",
+      "git_sha": "4b1452bb9d2de09c76c1a01f3c954eaec4b7d452"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part003",
+      "size": 8000000,
+      "sha256": "e8693d17b893cc71a13b4c17b2a017b681e72925d044f694936597600ee14bde",
+      "git_sha": "61a6ea11500f0aac4223048f9a7e443e3dfd9372"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part004",
+      "size": 8000000,
+      "sha256": "05e0b9e7deb8185d2c07e135a3e19bdd21f876d12889589f6670f8c315bb18ac",
+      "git_sha": "126801ef40727fdfa1e9fe3b99c7f4559b024594"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part005",
+      "size": 8000000,
+      "sha256": "db200d0bb73b64ffa7422000fd2bf7c521febc5ed1fc1f0bce027d94d55d4639",
+      "git_sha": "b5e837b630aa4fd48eeb340ab6917666415538fc"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part006",
+      "size": 8000000,
+      "sha256": "11ef14eb16dcb83f6c5f52216b963205bfe7caee17092ea5a0fcdec9aec32977",
+      "git_sha": "d88a6fbb8ccfe9309afc44d517efe4c9f1fa9542"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part007",
+      "size": 8000000,
+      "sha256": "f9b966c32a22f1dc83071961f8cb6fdbbf0e32d7382533cc1a828cd129b132f6",
+      "git_sha": "1567bb25fa901a447e7819c409360e0db64c5960"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part008",
+      "size": 8000000,
+      "sha256": "71dbd4d333fb2eafc6e59881b2c64cf617bf5af02cf302e4c2db5f232c3e267a",
+      "git_sha": "7012b6a1477e9cad5fc24e0c776d50a40e0497c7"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part009",
+      "size": 8000000,
+      "sha256": "b3565ef1bac84da894a10e83111d7d9bb21022879630482c1dea49d086d81cc1",
+      "git_sha": "99572bfecdc2356ee6e3cf060497d3c3d48fa234"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part010",
+      "size": 8000000,
+      "sha256": "678e53567b9b3b9015fd141057a252d22ee33192bc4059aa7eebc63b70f34f74",
+      "git_sha": "c30df08f6eb949abcc4cdf7dae22a5793fe17f1c"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part011",
+      "size": 8000000,
+      "sha256": "76209d1e2e33a521e29a8deaf896e90204465fe7ba079ebde22af544dbd77d59",
+      "git_sha": "741454b0a3fc4ad392dc0f22e2d3a11327633154"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part012",
+      "size": 8000000,
+      "sha256": "ff2f48473e53d8ee8fec03f59c33115498e15aebe31bad91ec6d804961d64502",
+      "git_sha": "078e449b5ec2c93354b3a0d8b6a531efe7b05838"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part013",
+      "size": 8000000,
+      "sha256": "d0ea5bf29925e3edad079f06c5764f68c2ec054963696becb7a28ffedb5a8c89",
+      "git_sha": "54704cb3a4f0ec31679aca4828000893b05b3367"
+    },
+    {
+      "name": "cobra-effect-final.mp4.part014",
+      "size": 3346849,
+      "sha256": "3197d8e8eec20dea40da8315fcb48fd59ebfe1f115de9a10da1fa13310791cac",
+      "git_sha": "7db966ea008958fc2ca70bba96f9310213dc6f2d"
+    }
+  ]
+}
