@@ -1,0 +1,63 @@
+name: Erfurt cloud render
+on:
+  push:
+    branches: ['outputs/erfurt-1080p-20261106']
+    paths: ['.github/workflows/erfurt.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  picture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700]
+    defaults:
+      run:
+        working-directory: render-source/erfurt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx remotion browser ensure
+      - name: Render section
+        run: |
+          mkdir -p sections
+          END=$((${{ matrix.start }} + 99))
+          npx remotion render src/index.tsx ErfurtShort sections/section-${{ matrix.start }}.mp4 --frames=${{ matrix.start }}-$END --scale=1 --codec=h264 --crf=16 --gl=swangle --concurrency=2 --timeout=180000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erfurt-section-${{ matrix.start }}
+          path: render-source/erfurt/sections/*.mp4
+          retention-days: 14
+  assemble:
+    needs: picture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: erfurt-section-*
+          path: sections
+          merge-multiple: true
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Assemble narration and verify
+        run: |
+          cp render-source/erfurt/completed-sections/*.mp4 sections/
+          cp render-source/erfurt/mix.wav narration.wav
+          for n in 0 300 $(seq 400 100 1700); do echo "file 'section-$n.mp4'"; done > sections/concat.txt
+          ffmpeg -v error -f concat -safe 0 -i sections/concat.txt -i narration.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -t 60 -movflags +faststart erfurt-1080p.mp4
+          ffmpeg -v error -i erfurt-1080p.mp4 -f null -
+          ffprobe -v error -show_entries format=duration,size:stream=width,height,codec_name -of json erfurt-1080p.mp4 > metadata.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erfurt-narrated-video
+          path: |
+            erfurt-1080p.mp4
+            metadata.json
+            render-source/erfurt/VOICE-LICENSE.md
+          retention-days: 14

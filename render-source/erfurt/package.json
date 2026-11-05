@@ -1,0 +1,27 @@
+{
+  "name": "animated-shorts-cloud-workspace",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.tsx --browser-executable=/usr/bin/chromium --port=3000",
+    "typecheck": "tsc --noEmit",
+    "still": "remotion render src/index.tsx BridgeShort out/still-warmup.mp4 --frames=59-60 --scale=0.25 --props='{\"post\":{\"dpr\":0.25}}' --browser-executable=/usr/bin/chromium --gl=swangle --concurrency=1 --timeout=180000 && ffmpeg -v error -y -i out/still-warmup.mp4 -vf 'trim=start_frame=1' -frames:v 1 out/smoke.png",
+    "smoke-video": "remotion render src/index.tsx BridgeShort out/smoke.mp4 --frames=60-74 --scale=0.25 --props='{\"post\":{\"dpr\":0.25}}' --browser-executable=/usr/bin/chromium --gl=swangle --concurrency=1 --timeout=180000"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.8.2",
+    "@react-three/postprocessing": "3.2.2",
+    "@remotion/bundler": "4.0.540",
+    "@remotion/cli": "4.0.540",
+    "@remotion/renderer": "4.0.540",
+    "@remotion/three": "4.0.540",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.181.0",
+    "postprocessing": "6.39.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.540",
+    "three": "0.181.2",
+    "typescript": "5.9.3"
+  }
+}
