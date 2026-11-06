@@ -1,0 +1,16 @@
+{
+  "composition": "XerxesOcean",
+  "frames": 2055,
+  "fps": 30,
+  "duration_seconds": 68.5,
+  "source_width": 1080,
+  "source_height": 1920,
+  "width": 1440,
+  "height": 2560,
+  "scale": 1.3333333333333333,
+  "chunks": 8,
+  "audio": "not supplied; silent visual master",
+  "shots": [0,132,285,414,561,663,816,903,1002,1146,1236,1344,1533,1635,1770,1905],
+  "planned_lightning": [472,473,507,1828,1829,1863],
+  "review_frames": [60,210,350,470,594,696,850,950,1080,1190,1290,1450,1590,1710,1840,1990]
+}
