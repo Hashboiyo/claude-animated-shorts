@@ -1,0 +1,127 @@
+name: Render Xerxes Ocean in parallel
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'productions/xerxes-ocean/**'
+      - '.github/workflows/xerxes-render.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: xerxes-render-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: productions/xerxes-ocean
+    shell: bash
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: productions/xerxes-ocean
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: productions/xerxes-ocean/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - name: Find browser
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          if [[ -z "$chrome" ]]; then npx remotion browser ensure; fi
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+      - name: Verify first frame and composition
+        run: node scripts/render-ci.mjs preflight
+      - id: plan
+        name: Partition 2055 frames into eight non-overlapping chunks
+        run: echo "matrix=$(node scripts/render-ci.mjs plan)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xerxes-preflight
+          path: productions/xerxes-ocean/work/preflight.png
+          retention-days: 7
+
+  render:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix: ${{ fromJson(needs.preflight.outputs.matrix) }}
+    name: Render chunk ${{ matrix.index }} (frames ${{ matrix.start }}–${{ matrix.end }})
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: productions/xerxes-ocean
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: productions/xerxes-ocean/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Find browser
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || true)"
+          if [[ -z "$chrome" ]]; then npx remotion browser ensure; fi
+          echo "CHROME_PATH=$chrome" >> "$GITHUB_ENV"
+      - name: Render native 1440×2560 H.264 frames with one local worker
+        run: node scripts/render-ci.mjs chunk ${{ matrix.index }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xerxes-chunk-${{ matrix.index }}
+          path: productions/xerxes-ocean/work/chunks/*
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  assemble:
+    needs: render
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: productions/xerxes-ocean
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check numpy Pillow
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: xerxes-chunk-*
+          path: productions/xerxes-ocean/work/chunks
+          merge-multiple: true
+      - name: Verify complete coverage and assemble without re-encoding
+        run: node scripts/assemble-ci.mjs
+      - name: Decode and inspect every frame
+        run: python scripts/qa-ci.py
+      - name: Upload MP4, original contact sheet and QA reports
+        if: always()
+        id: final
+        uses: actions/upload-artifact@v4
+        with:
+          name: xerxes-ocean-1440x2560-visual-master
+          path: productions/xerxes-ocean/output/*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Download link
+        if: always() && steps.final.outputs.artifact-url != ''
+        run: |
+          echo "[Download the rendered MP4 and QA reports](${{ steps.final.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
