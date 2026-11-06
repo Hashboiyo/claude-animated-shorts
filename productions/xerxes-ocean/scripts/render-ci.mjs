@@ -26,7 +26,7 @@ try{
  if(mode==='preflight'){
   await renderStill({serveUrl,composition,inputProps,frame:0,scale:.25,output:'work/preflight.png',imageFormat:'png',puppeteerInstance:browser,browserExecutable,chromiumOptions,timeoutInMilliseconds:180000});
   const raw=spawnSync('ffmpeg',['-v','error','-i','work/preflight.png','-f','rawvideo','-pix_fmt','rgb24','pipe:1'],{maxBuffer:20*1024*1024});
-  if(raw.status!==0)throw new Error(raw.stderr.toString());
+  if(raw.status!==0)throw raw.error??new Error(raw.stderr?.toString()||'Preflight decode failed');
   const data=raw.stdout;let sum=0,sum2=0;for(const x of data){sum+=x;sum2+=x*x;}const std=Math.sqrt(sum2/data.length-(sum/data.length)**2);
   if(!data.length||std<10)throw new Error(`Initial frame blank: std ${std}`);
   console.log(`Preflight passed: frame zero visible, std ${std.toFixed(2)}; ${config.frames} frames at ${config.fps}fps.`);
