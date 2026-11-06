@@ -12,7 +12,8 @@ if(mode==='plan'){process.stdout.write(JSON.stringify({include:matrix}));process
 if(!['preflight','chunk'].includes(mode))throw new Error('Expected plan, preflight, or chunk');
 const part=matrix[Number(process.argv[3]??0)];
 if(!part)throw new Error('Invalid chunk index');
-const tmp=path.resolve('work/tmp');fs.mkdirSync(tmp,{recursive:true});process.env.TMPDIR=tmp;
+// Chrome's Unix-domain SingletonSocket must remain under the 108-byte path limit.
+const tmp=fs.mkdtempSync('/tmp/xerxes-');process.env.TMPDIR=tmp;
 fs.mkdirSync('public/xerxes-ocean',{recursive:true});fs.mkdirSync('work/chunks',{recursive:true});
 const serveUrl=await bundle({entryPoint:path.resolve('src/index.tsx'),publicDir:path.resolve('public')});
 const browserExecutable=process.env.CHROME_PATH||undefined;
