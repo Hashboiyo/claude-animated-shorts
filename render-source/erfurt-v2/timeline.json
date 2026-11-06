@@ -1,0 +1,50 @@
+{
+  "duration": 38.56666666666667,
+  "frames": 1157,
+  "fps": 30,
+  "length_scale": 0.85,
+  "segments": [
+    {
+      "segment": 1,
+      "start": 0.06,
+      "end": 5.644416666666666,
+      "script": "In 1184, dozens of nobles died in a pool of human poop. They\u2019d shown up for a political meeting.",
+      "spoken_text": "In eleven eighty-four, dozens of nobles died in a pool of human poop. They\u2019d shown up for a political meeting."
+    },
+    {
+      "segment": 2,
+      "start": 5.824416666666666,
+      "end": 14.183604166666667,
+      "script": "Erfurt, in what\u2019s now Germany. King Henry VI\u2014the future Holy Roman Emperor\u2014has gathered nobles to settle a dispute between an archbishop and a powerful lord.",
+      "spoken_text": "Erfurt, in what\u2019s now Germany. King Henry the Sixth, the future Holy Roman Emperor, has gathered nobles to settle a dispute between an archbishop and a powerful lord."
+    },
+    {
+      "segment": 3,
+      "start": 14.363604166666667,
+      "end": 20.377583333333334,
+      "script": "The room is packed. Beneath them: wooden floors. Beneath those: a latrine pit. You can probably see the structural problem.",
+      "spoken_text": "The room is packed. Beneath them: wooden floors. Beneath those: a latrine pit. You can probably see the structural problem."
+    },
+    {
+      "segment": 4,
+      "start": 20.557583333333334,
+      "end": 26.142,
+      "script": "The floor gives way. People crash through into the waste below. Dozens die, with the toll often put at around sixty.",
+      "spoken_text": "The floor gives way. People crash through into the waste below. Dozens die, with the toll often put at around sixty."
+    },
+    {
+      "segment": 5,
+      "start": 26.322,
+      "end": 32.382416666666664,
+      "script": "Henry survives. According to accounts, he\u2019s sitting in a stone window recess that stays intact. Rescuers reach him with a ladder.",
+      "spoken_text": "Henry survives. According to accounts, he\u2019s sitting in a stone window recess that stays intact. Rescuers reach him with a ladder."
+    },
+    {
+      "segment": 6,
+      "start": 32.562416666666664,
+      "end": 38.03072916666666,
+      "script": "He later becomes emperor. But on this particular day, the most valuable seat in the empire was a windowsill.",
+      "spoken_text": "He later becomes emperor. But on this particular day, the most valuable seat in the empire was a windowsill."
+    }
+  ]
+}

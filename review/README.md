@@ -1,0 +1,4 @@
+# V2 pre-render review
+TypeScript checks passed. Thirteen representative frames reviewed across all six story beats; first frame also rendered at native1080x1920. Three30-frame motion samples at frames280,630,925 had no exact duplicate adjacent frames (see motion-check.json). This sampling is not a full-video QA pass. Independent review found suspended debris and a disappearing rescuer; both corrected, including settling debris flat at the water and completing the climb onto the stone ledge. Final full-output decode, dimension, duration, frame count, black/freeze and audio checks run in the cloud workflow.
+
+V2 voice is freshly synthesized at length_scale0.85, not retimed from the old mix. The edit is38.566667s. Retimed score and effects measured-14.9LUFS and-1.8dBTP before AAC encoding. No independent human listening or ASR validation claimed.

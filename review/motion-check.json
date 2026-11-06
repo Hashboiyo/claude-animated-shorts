@@ -1,0 +1,23 @@
+[
+  {
+    "start": 280,
+    "frames": 30,
+    "mean_pixel_difference": 10.662749141922095,
+    "minimum_pixel_difference": 9.665483217592593,
+    "exact_frozen_pairs": 0
+  },
+  {
+    "start": 630,
+    "frames": 30,
+    "mean_pixel_difference": 20.13376960608237,
+    "minimum_pixel_difference": 17.204470486111113,
+    "exact_frozen_pairs": 0
+  },
+  {
+    "start": 925,
+    "frames": 30,
+    "mean_pixel_difference": 7.336135706018521,
+    "minimum_pixel_difference": 5.868987268518518,
+    "exact_frozen_pairs": 0
+  }
+]

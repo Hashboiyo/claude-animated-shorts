@@ -1,0 +1,905 @@
+[
+  {
+    "word": "In",
+    "start": 0.08321995464852608,
+    "end": 0.18770975056689343,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "eleven",
+    "start": 0.23414965986394556,
+    "end": 0.5592290249433107,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "eighty-four,",
+    "start": 0.5940589569160997,
+    "end": 1.1397278911564626,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "dozens",
+    "start": 1.3835374149659865,
+    "end": 1.6737868480725624,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "of",
+    "start": 1.7086167800453516,
+    "end": 1.8014965986394558,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "nobles",
+    "start": 1.859546485260771,
+    "end": 2.184625850340136,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "died",
+    "start": 2.2542857142857144,
+    "end": 2.54453514739229,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "in",
+    "start": 2.6025850340136056,
+    "end": 2.649024943310658,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 2.683854875283447,
+    "end": 2.730294784580499,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "pool",
+    "start": 2.788344671201814,
+    "end": 3.043764172335601,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "of",
+    "start": 3.090204081632653,
+    "end": 3.1830839002267575,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "human",
+    "start": 3.2063038548752836,
+    "end": 3.5429931972789115,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "poop.",
+    "start": 3.5894331065759637,
+    "end": 3.7984126984126987,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "They\u2019d",
+    "start": 3.926122448979592,
+    "end": 4.042222222222222,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "shown",
+    "start": 4.135102040816326,
+    "end": 4.332471655328797,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "up",
+    "start": 4.367301587301587,
+    "end": 4.541451247165533,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "for",
+    "start": 4.622721088435374,
+    "end": 4.808480725623582,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 4.808480725623582,
+    "end": 4.854920634920634,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "political",
+    "start": 4.889750566893424,
+    "end": 5.249659863945578,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "meeting.",
+    "start": 5.2844897959183665,
+    "end": 5.56312925170068,
+    "segment": 1,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Erfurt,",
+    "start": 5.859246598639455,
+    "end": 6.2191558956916095,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "in",
+    "start": 6.323645691609977,
+    "end": 6.416525510204081,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "what\u2019s",
+    "start": 6.462965419501133,
+    "end": 6.660335034013605,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "now",
+    "start": 6.695164965986394,
+    "end": 6.904144557823129,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Germany.",
+    "start": 6.938974489795918,
+    "end": 7.287273809523809,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "King",
+    "start": 7.3569336734693875,
+    "end": 7.507863378684807,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Henry",
+    "start": 7.554303287981859,
+    "end": 7.832942743764171,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 7.890992630385487,
+    "end": 7.972262471655329,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Sixth,",
+    "start": 8.041922335600907,
+    "end": 8.378611678004535,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 8.517931405895691,
+    "end": 8.599201247165531,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "future",
+    "start": 8.645641156462585,
+    "end": 8.97072052154195,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Holy",
+    "start": 9.005550453514738,
+    "end": 9.330629818594105,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Roman",
+    "start": 9.377069727891156,
+    "end": 9.667319160997732,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Emperor,",
+    "start": 9.713759070294785,
+    "end": 10.12010827664399,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "has",
+    "start": 10.294257936507936,
+    "end": 10.433577664399092,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "gathered",
+    "start": 10.480017573696145,
+    "end": 10.781876984126985,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "nobles",
+    "start": 10.816706916099772,
+    "end": 11.165006235827665,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "to",
+    "start": 11.234666099773243,
+    "end": 11.292715986394558,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "settle",
+    "start": 11.33915589569161,
+    "end": 11.60618537414966,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 11.641015306122448,
+    "end": 11.675845238095238,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "dispute",
+    "start": 11.710675170068026,
+    "end": 12.093804421768706,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "between",
+    "start": 12.128634353741496,
+    "end": 12.407273809523808,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "an",
+    "start": 12.453713718820861,
+    "end": 12.534983560090701,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "archbishop",
+    "start": 12.593033446712017,
+    "end": 13.196752267573697,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "and",
+    "start": 13.231582199546484,
+    "end": 13.347681972789115,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 13.370901927437641,
+    "end": 13.394121882086168,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "powerful",
+    "start": 13.452171768707483,
+    "end": 13.846910997732426,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "lord.",
+    "start": 13.870130952380952,
+    "end": 14.137160430839002,
+    "segment": 2,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "The",
+    "start": 14.386824121315193,
+    "end": 14.479703939909298,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "room",
+    "start": 14.549363803854876,
+    "end": 14.828003259637189,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "is",
+    "start": 14.932493055555556,
+    "end": 15.013762896825398,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "packed.",
+    "start": 15.060202806122449,
+    "end": 15.350452239229025,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Beneath",
+    "start": 15.431722080498867,
+    "end": 15.67553160430839,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "them:",
+    "start": 15.721971513605443,
+    "end": 15.930951105442176,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "wooden",
+    "start": 16.128320719954647,
+    "end": 16.453400085034012,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "floors.",
+    "start": 16.523059948979594,
+    "end": 16.882969246031745,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Beneath",
+    "start": 16.987459041950114,
+    "end": 17.184828656462585,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "those:",
+    "start": 17.219658588435372,
+    "end": 17.521517998866212,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 17.684057681405896,
+    "end": 17.742107568027212,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "latrine",
+    "start": 17.823377409297052,
+    "end": 18.19489668367347,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "pit.",
+    "start": 18.264556547619048,
+    "end": 18.42709623015873,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "You",
+    "start": 18.554805980725625,
+    "end": 18.647685799319728,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "can",
+    "start": 18.68251573129252,
+    "end": 18.77539554988662,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "probably",
+    "start": 18.821835459183674,
+    "end": 19.18174475623583,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "see",
+    "start": 19.251404620181404,
+    "end": 19.355894416099773,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 19.379114370748297,
+    "end": 19.42555428004535,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "structural",
+    "start": 19.471994189342404,
+    "end": 19.901563350340137,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "problem.",
+    "start": 19.936393282312924,
+    "end": 20.319522534013608,
+    "segment": 3,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "The",
+    "start": 20.58080328798186,
+    "end": 20.638853174603174,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "floor",
+    "start": 20.685293083900227,
+    "end": 20.96393253968254,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "gives",
+    "start": 20.987152494331067,
+    "end": 21.219352040816325,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "way.",
+    "start": 21.27740192743764,
+    "end": 21.474771541950112,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "People",
+    "start": 21.544431405895693,
+    "end": 21.76502097505669,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "crash",
+    "start": 21.811460884353743,
+    "end": 22.101710317460316,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "through",
+    "start": 22.171370181405894,
+    "end": 22.403569727891156,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "into",
+    "start": 22.45000963718821,
+    "end": 22.63576927437642,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 22.670599206349205,
+    "end": 22.75186904761905,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "waste",
+    "start": 22.786698979591836,
+    "end": 23.042118480725623,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "below.",
+    "start": 23.088558390022676,
+    "end": 23.367197845804988,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Dozens",
+    "start": 23.506517573696144,
+    "end": 23.843206916099774,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "die,",
+    "start": 23.90125680272109,
+    "end": 24.16828628117914,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "with",
+    "start": 24.295996031746032,
+    "end": 24.412095804988663,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 24.412095804988663,
+    "end": 24.48175566893424,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "toll",
+    "start": 24.539805555555557,
+    "end": 24.760395124716553,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "often",
+    "start": 24.83005498866213,
+    "end": 25.05064455782313,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "put",
+    "start": 25.108694444444446,
+    "end": 25.259624149659864,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "at",
+    "start": 25.306064058956917,
+    "end": 25.364113945578232,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "around",
+    "start": 25.422163832199548,
+    "end": 25.677583333333335,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "sixty.",
+    "start": 25.71241326530612,
+    "end": 26.08393253968254,
+    "segment": 4,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Henry",
+    "start": 26.35682993197279,
+    "end": 26.62385941043084,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "survives.",
+    "start": 26.681909297052155,
+    "end": 27.146308390022675,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "According",
+    "start": 27.28562811791383,
+    "end": 27.66875736961451,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "to",
+    "start": 27.7035873015873,
+    "end": 27.784857142857142,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "accounts,",
+    "start": 27.831297052154195,
+    "end": 28.27247619047619,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "he\u2019s",
+    "start": 28.376965986394556,
+    "end": 28.481455782312924,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "sitting",
+    "start": 28.527895691609977,
+    "end": 28.80653514739229,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "in",
+    "start": 28.864585034013604,
+    "end": 28.911024943310657,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 28.957464852607707,
+    "end": 29.00390476190476,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "stone",
+    "start": 29.050344671201813,
+    "end": 29.317374149659862,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "window",
+    "start": 29.363814058956915,
+    "end": 29.642453514739227,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "recess",
+    "start": 29.677283446712018,
+    "end": 30.013972789115645,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "that",
+    "start": 30.048802721088435,
+    "end": 30.17651247165533,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "stays",
+    "start": 30.22295238095238,
+    "end": 30.466761904761903,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "intact.",
+    "start": 30.513201814058956,
+    "end": 30.931160997732427,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "Rescuers",
+    "start": 31.02404081632653,
+    "end": 31.476829931972787,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "reach",
+    "start": 31.500049886621316,
+    "end": 31.72063945578231,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "him",
+    "start": 31.743859410430836,
+    "end": 31.90639909297052,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "with",
+    "start": 31.92961904761905,
+    "end": 32.010888888888886,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 32.068938775510205,
+    "end": 32.09215873015873,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "ladder.",
+    "start": 32.12698866213152,
+    "end": 32.335968253968254,
+    "segment": 5,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "He",
+    "start": 32.58563662131519,
+    "end": 32.69012641723356,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "later",
+    "start": 32.71334637188208,
+    "end": 32.899106009070294,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "becomes",
+    "start": 32.945545918367344,
+    "end": 33.328675170068024,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "emperor.",
+    "start": 33.398335034013606,
+    "end": 33.74663435374149,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "But",
+    "start": 33.85112414965986,
+    "end": 33.944003968253966,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "on",
+    "start": 33.97883390022675,
+    "end": 34.1529835600907,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "this",
+    "start": 34.17620351473923,
+    "end": 34.2806933106576,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "particular",
+    "start": 34.315523242630384,
+    "end": 34.79153231292517,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "day,",
+    "start": 34.84958219954648,
+    "end": 35.09339172335601,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 35.27915136054421,
+    "end": 35.34881122448979,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "most",
+    "start": 35.39525113378684,
+    "end": 35.66228061224489,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "valuable",
+    "start": 35.70872052154195,
+    "end": 36.184729591836735,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "seat",
+    "start": 36.24277947845805,
+    "end": 36.498198979591834,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "in",
+    "start": 36.6026887755102,
+    "end": 36.67234863945578,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "the",
+    "start": 36.67234863945578,
+    "end": 36.78844841269841,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "empire",
+    "start": 36.834888321995464,
+    "end": 37.264457482993194,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "was",
+    "start": 37.310897392290244,
+    "end": 37.41538718820861,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "a",
+    "start": 37.41538718820861,
+    "end": 37.45021712018141,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  },
+  {
+    "word": "windowsill.",
+    "start": 37.496657029478456,
+    "end": 37.984276077097505,
+    "segment": 6,
+    "alignment": "model_phoneme_boundary"
+  }
+]

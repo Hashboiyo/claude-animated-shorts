@@ -1,0 +1,83 @@
+name: Erfurt v2 native 1080p parallel render
+on:
+  push:
+    branches: ['outputs/erfurt-v2-1080p-20261106']
+    paths: ['.github/workflows/erfurt-v2.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  picture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100]
+    defaults:
+      run:
+        working-directory: render-source/erfurt-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npx remotion browser ensure
+      - name: Render native 1080p section
+        run: |
+          mkdir -p sections
+          END=$((${{ matrix.start }} + 99))
+          if [ "$END" -gt 1156 ]; then END=1156; fi
+          npx remotion render src/index.tsx ErfurtV2 sections/section-${{ matrix.start }}.mp4 --frames=${{ matrix.start }}-$END --scale=1 --codec=h264 --crf=16 --gl=swangle --concurrency=2 --timeout=180000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erfurt-v2-section-${{ matrix.start }}
+          path: render-source/erfurt-v2/sections/*.mp4
+          if-no-files-found: error
+          retention-days: 14
+  assemble:
+    needs: picture
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: outputs/erfurt-v2-1080p-20261106
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: erfurt-v2-section-*
+          path: sections
+          merge-multiple: true
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Assemble narration and verify native output
+        run: |
+          mkdir -p outputs/erfurt-v2-1080p
+          for n in $(seq 0 100 1100); do echo "file 'section-$n.mp4'"; done > sections/concat.txt
+          ffmpeg -v error -f concat -safe 0 -i sections/concat.txt -i render-source/erfurt-v2/mix.wav -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -t 38.566666667 -movflags +faststart outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4
+          ffmpeg -v error -i outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4 -f null -
+          ffprobe -v error -count_frames -show_entries format=duration,size:stream=codec_type,width,height,codec_name,nb_read_frames,r_frame_rate,sample_rate,channels -of json outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4 > outputs/erfurt-v2-1080p/metadata.json
+          python render-source/erfurt-v2/validate.py outputs/erfurt-v2-1080p/metadata.json
+          ffmpeg -hide_banner -i outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4 -vf 'blackdetect=d=0.1:pix_th=0.03,freezedetect=n=-50dB:d=0.4' -af ebur128=peak=true -f null - 2> outputs/erfurt-v2-1080p/qa.log
+          python render-source/erfurt-v2/check-motion-log.py outputs/erfurt-v2-1080p/qa.log
+          cp render-source/erfurt-v2/VOICE-LICENSE.md outputs/erfurt-v2-1080p/
+          sha256sum outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4 > outputs/erfurt-v2-1080p/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erfurt-v2-narrated-video
+          path: outputs/erfurt-v2-1080p/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve final video on output branch
+        run: |
+          python -c "from pathlib import Path; assert Path('outputs/erfurt-v2-1080p/erfurt-v2-1080p.mp4').stat().st_size < 100_000_000, 'Use artifact: MP4 exceeds conservative GitHub file limit'"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add outputs/erfurt-v2-1080p
+          if ! git diff --cached --quiet; then
+            git commit -m 'Preserve completed Erfurt v2 native 1080p video'
+            git push origin HEAD:outputs/erfurt-v2-1080p-20261106
+          fi
