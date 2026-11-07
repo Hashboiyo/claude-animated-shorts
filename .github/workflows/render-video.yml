@@ -60,6 +60,8 @@ jobs:
       fps: ${{ steps.info.outputs.fps }}
       width: ${{ steps.info.outputs.width }}
       height: ${{ steps.info.outputs.height }}
+      out_width: ${{ steps.info.outputs.out_width }}
+      out_height: ${{ steps.info.outputs.out_height }}
       composition_id: ${{ steps.info.outputs.composition_id }}
       audio_file: ${{ steps.info.outputs.audio_file }}
     steps:
@@ -96,6 +98,7 @@ jobs:
             --entry=src/index.ts \
             --comp="${{ inputs.composition_id }}" \
             --audio="${{ inputs.audio_file }}" \
+            --scale="${{ inputs.scale }}" \
             --gl=swangle \
             --chrome-mode=headless-shell \
             --json-out=out/composition.json
@@ -293,8 +296,8 @@ jobs:
             --file="out/final-${COMP}.mp4" \
             --duration="${{ needs.validate.outputs.duration }}" \
             --fps="${{ needs.validate.outputs.fps }}" \
-            --width="${{ needs.validate.outputs.width }}" \
-            --height="${{ needs.validate.outputs.height }}" \
+            --width="${{ needs.validate.outputs.out_width }}" \
+            --height="${{ needs.validate.outputs.out_height }}" \
             --out=out/qa
 
       - name: Upload final MP4 + QA report
@@ -335,7 +338,7 @@ jobs:
             echo "| --- | --- |"
             echo "| Composition | \`${{ needs.validate.outputs.composition_id }}\` |"
             echo "| Frames | ${{ needs.validate.outputs.duration }} @ ${{ needs.validate.outputs.fps }} fps |"
-            echo "| Size | ${{ needs.validate.outputs.width }}x${{ needs.validate.outputs.height }} |"
+            echo "| Size | ${{ needs.validate.outputs.out_width }}x${{ needs.validate.outputs.out_height }} |"
             echo "| Chunks | ${{ inputs.chunks }} parallel jobs |"
             if [ -f "$FILE" ]; then
               echo "| Final MP4 | \`$FILE\` ($(stat -c%s "$FILE") bytes) |"

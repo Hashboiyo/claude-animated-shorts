@@ -14,7 +14,10 @@ const comp = args.comp ?? args.composition ?? "LanternCove";
 const audio = path.resolve(args.audio ?? "public/audio/lantern-cove-music.wav");
 const gl = args.gl ?? process.env.REMOTION_GL ?? "swangle";
 const chromeMode = args["chrome-mode"] ?? process.env.REMOTION_CHROME_MODE ?? "headless-shell";
+const scale = Number(args.scale ?? 1);
 const jsonOut = path.resolve(args["json-out"] ?? "out/composition.json");
+
+if (!(scale > 0)) throw new Error(`--scale must be positive, got ${args.scale}`);
 
 if (!fs.existsSync(entry)) throw new Error(`Entry point not found: ${entry}`);
 if (!fs.existsSync(audio)) throw new Error(`Master audio not found: ${audio}`);
@@ -52,6 +55,8 @@ try {
 const fps = composition.fps;
 const frames = composition.durationInFrames;
 const seconds = frames / fps;
+const outputWidth = Math.round(composition.width * scale);
+const outputHeight = Math.round(composition.height * scale);
 const audioInfo = readWavInfo(audio);
 
 if (!audioInfo) throw new Error(`Master audio is not a readable PCM WAV: ${audio}`);
@@ -69,6 +74,9 @@ const report = {
   durationSeconds: Number(seconds.toFixed(3)),
   width: composition.width,
   height: composition.height,
+  scale,
+  outputWidth,
+  outputHeight,
   gl: usedGl,
   chromeMode,
   audio: {
@@ -92,6 +100,9 @@ setGithubOutput({
   fps,
   width: composition.width,
   height: composition.height,
+  scale,
+  out_width: outputWidth,
+  out_height: outputHeight,
   audio_file: audio,
   composition_json: jsonOut,
 });
@@ -99,6 +110,6 @@ setGithubOutput({
 console.log("");
 console.log(`Composition : ${composition.id}`);
 console.log(`Frames      : ${frames} (${seconds.toFixed(2)} s @ ${fps} fps)`);
-console.log(`Size        : ${composition.width}x${composition.height}`);
+console.log(`Size        : ${composition.width}x${composition.height} (output ${outputWidth}x${outputHeight} at scale ${scale})`);
 console.log(`Audio       : ${audio} (${formatBytes(audioInfo.size)})`);
 console.log(`Report      : ${jsonOut}`);
