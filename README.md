@@ -1,5 +1,11 @@
 # Claude Animated Shorts
 
+> **Cloud render workspace:** this fork is also a working Remotion + Three.js
+> project with GitHub Actions cloud rendering. Start with
+> [`docs/START_HERE.md`](docs/START_HERE.md). Full pipeline details are in
+> [`docs/CLOUD_RENDERING.md`](docs/CLOUD_RENDERING.md). Nothing needs to be
+> rendered on your laptop.
+
 The free Claude skill from the video **"How to Make Viral Animated Shorts Using Claude (Full Workflow)"**.
 
 It makes 55-70 s vertical animated story shorts: 2D characters in a colourful 3D world, with ink outlines, a painted town, lens blur, gliding cameras, a march score and sound effects. Everything is rendered with three.js inside Remotion on your own PC, with no AI video generator.

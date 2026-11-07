@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# rendered deliverables / QA (cloud artifacts are the source of truth)
+out/
+renders/
+*.mp4
+*.mov
+*.webm
+*.png
+*.jpg
+*.jpeg
+!references/**/*.png
+!references/**/*.jpg
+!references/**/*.jpeg
+
+# Remotion
+.remotion/
+remotion-tmp/
+.remotion-webpack-bundle-*
+
+# local env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+*.log
+npm-debug.log*

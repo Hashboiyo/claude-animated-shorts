@@ -1,0 +1,87 @@
+name: Render stills + contact sheet (cloud)
+
+run-name: Stills ${{ inputs.composition_id }} • ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      composition_id:
+        description: Remotion composition ID
+        required: true
+        default: LanternCove
+      frames:
+        description: "Comma-separated frames (e.g. 0,60,120,180) or \"auto\" for 12 evenly spaced stills"
+        required: true
+        default: auto
+      scale:
+        description: Still scale (0.5 is fast QA; 1 is full composition size)
+        required: true
+        default: "0.5"
+      retention_days:
+        description: Artifact retention in days
+        required: true
+        default: "14"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stills-${{ github.ref }}-${{ inputs.composition_id }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  REMOTION_TMP: /tmp/remotion-tmp
+
+jobs:
+  stills:
+    name: Stills + contact sheet
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare temp
+        run: mkdir -p "$REMOTION_TMP"
+
+      - name: Ensure headless browser
+        run: npx remotion browser ensure
+
+      - name: Render stills + contact sheet
+        run: |
+          node scripts/render-stills.mjs \
+            --entry=src/index.ts \
+            --comp="${{ inputs.composition_id }}" \
+            --frames="${{ inputs.frames }}" \
+            --scale="${{ inputs.scale }}" \
+            --out=out/stills \
+            --contact=out/stills/contact-sheet.png
+
+      - name: Upload stills
+        uses: actions/upload-artifact@v4
+        with:
+          name: stills-${{ inputs.composition_id }}-${{ github.run_id }}
+          path: out/stills/**
+          retention-days: ${{ inputs.retention_days }}
+          if-no-files-found: error
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Stills summary"
+            echo ""
+            echo "Composition: \`${{ inputs.composition_id }}\`"
+            echo ""
+            echo "Download \`contact-sheet.png\` and the individual stills from the **Artifacts** section."
+          } >> "$GITHUB_STEP_SUMMARY"

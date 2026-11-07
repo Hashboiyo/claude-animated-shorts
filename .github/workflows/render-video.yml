@@ -1,0 +1,324 @@
+name: Render video (cloud matrix)
+
+run-name: Render ${{ inputs.composition_id }} • ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      composition_id:
+        description: Remotion composition ID
+        required: true
+        default: LanternCove
+      chunks:
+        description: Parallel frame chunks (8-32; 8 is the minimum)
+        required: true
+        default: "8"
+      scale:
+        description: Output scale (1 = composition size; 1.3333 = 2K from 1080p)
+        required: true
+        default: "1"
+      crf:
+        description: H.264 CRF (lower is better; 16-18 is the house default)
+        required: true
+        default: "18"
+      audio_file:
+        description: Master audio WAV (already mixed voice + music)
+        required: true
+        default: public/audio/lantern-cove-music.wav
+      release_tag:
+        description: Optional GitHub Release tag to publish the final MP4
+        required: false
+        default: ""
+      retention_days:
+        description: Artifact retention in days
+        required: true
+        default: "14"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-video-${{ github.ref }}-${{ inputs.composition_id }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+  REMOTION_TMP: /tmp/remotion-tmp
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Stage 1: bundle, typecheck, metadata, frame-zero WebGL proof, matrix plan
+  # -------------------------------------------------------------------------
+  validate:
+    name: Validate + frame 0
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      duration: ${{ steps.info.outputs.duration_frames }}
+      duration_seconds: ${{ steps.info.outputs.duration_seconds }}
+      fps: ${{ steps.info.outputs.fps }}
+      width: ${{ steps.info.outputs.width }}
+      height: ${{ steps.info.outputs.height }}
+      composition_id: ${{ steps.info.outputs.composition_id }}
+      audio_file: ${{ steps.info.outputs.audio_file }}
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Ensure headless browser
+        run: npx remotion browser ensure
+
+      - name: TypeScript
+        run: npx tsc --noEmit
+
+      - name: Validate composition + master audio
+        id: info
+        run: |
+          node scripts/composition-info.mjs \
+            --entry=src/index.ts \
+            --comp="${{ inputs.composition_id }}" \
+            --audio="${{ inputs.audio_file }}" \
+            --json-out=out/composition.json
+
+      - name: Render frame 0 (WebGL / fonts / textures proof)
+        run: |
+          mkdir -p "$REMOTION_TMP"
+          node scripts/render-stills.mjs \
+            --entry=src/index.ts \
+            --comp="${{ inputs.composition_id }}" \
+            --frames=0 \
+            --scale=0.5 \
+            --out=out/frame-zero \
+            --require-variance
+
+      - name: Compute 8+ non-overlapping frame ranges
+        id: matrix
+        run: |
+          node scripts/make-matrix.mjs \
+            --duration="${{ steps.info.outputs.duration_frames }}" \
+            --chunks="${{ inputs.chunks }}" \
+            --out=out/matrix.json
+
+      - name: Upload validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{ steps.info.outputs.composition_id }}-${{ github.run_id }}
+          path: |
+            out/composition.json
+            out/matrix.json
+            out/frame-zero/**
+          retention-days: ${{ inputs.retention_days }}
+          if-no-files-found: error
+
+  # -------------------------------------------------------------------------
+  # Stage 2: one render worker per runner, identical settings, muted chunks
+  # -------------------------------------------------------------------------
+  render-chunks:
+    name: Chunk ${{ matrix.index }} [${{ matrix.start }}-${{ matrix.end }}]
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix: ${{ fromJSON(needs.validate.outputs.matrix) }}
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prepare temp + output
+        run: mkdir -p "$REMOTION_TMP" out/chunks
+
+      - name: Ensure headless browser
+        run: npx remotion browser ensure
+
+      - name: Render chunk
+        env:
+          COMP: ${{ inputs.composition_id }}
+          START: ${{ matrix.start }}
+          END: ${{ matrix.end }}
+          INDEX: ${{ matrix.index }}
+          CRF: ${{ inputs.crf }}
+          SCALE: ${{ inputs.scale }}
+        run: |
+          set -o pipefail
+          OUT="out/chunks/chunk-${INDEX}.mp4"
+          render() {
+            npx remotion render src/index.ts "$COMP" "$OUT" \
+              --frames="${START}-${END}" \
+              --codec=h264 \
+              --crf="$CRF" \
+              --pixel-format=yuv420p \
+              --concurrency=1 \
+              --muted \
+              --gl="$1" \
+              --scale="$SCALE" \
+              --x264-preset=veryfast \
+              --timeout=180000 \
+              --log=verbose
+          }
+          render angle || render swangle
+
+      - name: Checksum + frame-range manifest
+        env:
+          INDEX: ${{ matrix.index }}
+          START: ${{ matrix.start }}
+          END: ${{ matrix.end }}
+        run: |
+          node scripts/chunk-manifest.mjs \
+            --file="out/chunks/chunk-${INDEX}.mp4" \
+            --index="${INDEX}" \
+            --start="${START}" \
+            --end="${END}" \
+            --out="out/chunks/chunk-${INDEX}.json"
+
+      - name: Upload chunk
+        uses: actions/upload-artifact@v4
+        with:
+          name: chunk-${{ matrix.index }}-${{ matrix.start }}-${{ matrix.end }}
+          path: |
+            out/chunks/chunk-${{ matrix.index }}.mp4
+            out/chunks/chunk-${{ matrix.index }}.json
+            out/chunks/chunk-${{ matrix.index }}.mp4.sha256
+          retention-days: ${{ inputs.retention_days }}
+          compression-level: 0
+          if-no-files-found: error
+
+  # -------------------------------------------------------------------------
+  # Stage 3: verify → lossless concat → mux master audio → QA → publish
+  # -------------------------------------------------------------------------
+  assemble-and-qa:
+    name: Assemble + audio mux + QA
+    needs: [validate, render-chunks]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Download all chunk artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: chunk-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Verify checksums + gap-free coverage
+        run: |
+          node scripts/verify-chunks.mjs \
+            --dir=artifacts \
+            --duration="${{ needs.validate.outputs.duration }}" \
+            --chunks="${{ inputs.chunks }}" \
+            --out=out/assembly
+
+      - name: Lossless concatenate
+        run: |
+          mkdir -p out
+          ffmpeg -y -v error \
+            -f concat -safe 0 \
+            -i out/assembly/concat.txt \
+            -c copy \
+            out/assembly/video-silent.mp4
+
+      - name: Mux master audio
+        env:
+          AUDIO: ${{ inputs.audio_file }}
+          COMP: ${{ needs.validate.outputs.composition_id }}
+        run: |
+          test -f "$AUDIO" || { echo "Missing master audio: $AUDIO"; exit 1; }
+          ffmpeg -y -v error \
+            -i out/assembly/video-silent.mp4 \
+            -i "$AUDIO" \
+            -map 0:v:0 -map 1:a:0 \
+            -c:v copy -c:a aac -b:a 192k -ar 48000 \
+            -shortest -movflags +faststart \
+            "out/final-${COMP}.mp4"
+
+      - name: Final technical + visual QA
+        env:
+          COMP: ${{ needs.validate.outputs.composition_id }}
+        run: |
+          node scripts/qa-video.mjs \
+            --file="out/final-${COMP}.mp4" \
+            --duration="${{ needs.validate.outputs.duration }}" \
+            --fps="${{ needs.validate.outputs.fps }}" \
+            --width="${{ needs.validate.outputs.width }}" \
+            --height="${{ needs.validate.outputs.height }}" \
+            --out=out/qa
+
+      - name: Upload final MP4 + QA report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-${{ needs.validate.outputs.composition_id }}-${{ github.run_id }}
+          path: |
+            out/final-*.mp4
+            out/qa/**
+          retention-days: ${{ inputs.retention_days }}
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Publish to GitHub Release (optional)
+        if: ${{ inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+          COMP: ${{ needs.validate.outputs.composition_id }}
+        run: |
+          FILE="out/final-${COMP}.mp4"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$FILE" --clobber
+          else
+            gh release create "$TAG" "$FILE" \
+              --title "Render: ${COMP} (${TAG})" \
+              --notes "Cloud-rendered with GitHub Actions. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+      - name: Job summary
+        if: always()
+        run: |
+          FILE="out/final-${{ needs.validate.outputs.composition_id }}.mp4"
+          {
+            echo "## Cloud render summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Composition | \`${{ needs.validate.outputs.composition_id }}\` |"
+            echo "| Frames | ${{ needs.validate.outputs.duration }} @ ${{ needs.validate.outputs.fps }} fps |"
+            echo "| Size | ${{ needs.validate.outputs.width }}x${{ needs.validate.outputs.height }} |"
+            echo "| Chunks | ${{ inputs.chunks }} parallel jobs |"
+            if [ -f "$FILE" ]; then
+              echo "| Final MP4 | \`$FILE\` ($(stat -c%s "$FILE") bytes) |"
+            fi
+            echo ""
+            echo "Download the MP4 from the **Artifacts** section of this run."
+          } >> "$GITHUB_STEP_SUMMARY"
