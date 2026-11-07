@@ -18,6 +18,12 @@ runner-minutes per month. At 8 chunks, a single 1080x1920 short can consume
 several hundred of those minutes, so keep it public for unlimited cloud
 renders.
 
+GitHub may pause Actions on a **fork** after very heavy usage. If the Actions
+tab says "Workflows are not currently being run on this fork due to the scale
+of GitHub Actions usage", click **Re-enable workflows**. If that option is not
+available, move the project to a standalone public repository (not a fork);
+the workflows do not change.
+
 ## Workflows
 
 | Workflow | File | Purpose |
@@ -138,6 +144,20 @@ gh workflow run stills.yml \
 - Extracts five sample frames and a QA contact sheet, writes
   `qa-report.json` + `qa-report.md`, and uploads everything.
 - Optionally publishes the MP4 to a GitHub Release.
+
+## Chrome 158 / software WebGL note
+
+Remotion 4.0.540+ bundles Chrome Headless Shell 158. Chrome 158 refuses to
+create a WebGL context from SwiftShader unless it is explicitly allowed. The
+repository's `postinstall` script `scripts/patch-remotion-gl.mjs` adds
+`--enable-unsafe-swiftshader` to Remotion's `swangle` backend. This is why the
+CI jobs use:
+
+- `chrome_mode=headless-shell`
+- `gl=swangle`
+
+If Remotion later ships this flag by default, the patch becomes a no-op and
+can be deleted.
 
 ## Audio contract
 
