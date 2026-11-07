@@ -131,6 +131,8 @@ gh workflow run stills.yml \
 
 ### Stage 3 — `assemble-and-qa`
 
+- Installs system FFmpeg/ffprobe explicitly (the runner image does not always
+  expose them on PATH).
 - Downloads every chunk artifact in one directory.
 - Verifies every SHA256 and byte size.
 - Asserts chunk 0 starts at frame 0, each next chunk starts at
