@@ -1,8 +1,8 @@
 name: Add Xerxes narration and original music
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+    branches: ['codex/xerxes-ocean-audio-*']
     paths:
       - 'audio-productions/xerxes-ocean/**'
       - '.github/workflows/xerxes-audio.yml'
@@ -13,7 +13,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: xerxes-audio-${{ github.head_ref || github.ref }}
+  group: xerxes-audio-${{ github.ref_name }}
   cancel-in-progress: true
 
 defaults:
