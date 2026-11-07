@@ -1,8 +1,9 @@
 import { Config } from "@remotion/cli/config";
 
-// Three.js needs a real WebGL backend. ANGLE works locally and on the
-// GitHub-hosted Ubuntu runners (the CI workflows can fall back to swangle).
-Config.setChromiumOpenGlRenderer("angle");
+// Three.js needs WebGL. GitHub's runners have no GPU, so CI uses the
+// swangle (SwiftShader-on-ANGLE) backend. scripts/patch-remotion-gl.mjs adds
+// the --enable-unsafe-swiftshader flag that Chrome 158 requires.
+Config.setChromiumOpenGlRenderer("swangle");
 
 Config.setVideoImageFormat("jpeg");
 Config.setJpegQuality(92);

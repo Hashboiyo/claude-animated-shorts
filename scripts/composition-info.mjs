@@ -12,7 +12,8 @@ const args = parseArgs();
 const entry = path.resolve(args.entry ?? "src/index.ts");
 const comp = args.comp ?? args.composition ?? "LanternCove";
 const audio = path.resolve(args.audio ?? "public/audio/lantern-cove-music.wav");
-const gl = args.gl ?? process.env.REMOTION_GL ?? "angle";
+const gl = args.gl ?? process.env.REMOTION_GL ?? "swangle";
+const chromeMode = args["chrome-mode"] ?? process.env.REMOTION_CHROME_MODE ?? "headless-shell";
 const jsonOut = path.resolve(args["json-out"] ?? "out/composition.json");
 
 if (!fs.existsSync(entry)) throw new Error(`Entry point not found: ${entry}`);
@@ -30,6 +31,7 @@ const readComposition = async (openGl) =>
   selectComposition({
     serveUrl,
     id: comp,
+    chromeMode,
     chromiumOptions: { gl: openGl },
   });
 
@@ -68,6 +70,7 @@ const report = {
   width: composition.width,
   height: composition.height,
   gl: usedGl,
+  chromeMode,
   audio: {
     path: audio,
     bytes: audioInfo.size,

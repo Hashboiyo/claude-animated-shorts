@@ -4,8 +4,8 @@ export const PALETTE = {
   ink: "#241726",
   worldInk: "#171018",
 
-  skyTop: "#4f7fc4",
-  skyMid: "#9a8fc0",
+  skyTop: "#4f6fb8",
+  skyMid: "#c98f9a",
   skyHorizon: "#ffc47c",
   sun: "#ffcf9e",
   fog: "#e8a97a",

@@ -1,8 +1,6 @@
 import React, { useLayoutEffect } from "react";
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
-import { Bloom, EffectComposer, ToneMapping, Vignette } from "@react-three/postprocessing";
-import { ToneMappingMode } from "postprocessing";
 import { PALETTE } from "./palette";
 import { cameraAt } from "./timeline";
 import { World } from "./World";
@@ -36,15 +34,6 @@ export const Scene: React.FC<{ frame: number }> = ({ frame }) => {
 
       <World frame={frame} />
       <Character frame={frame} cameraPos={cam.position} />
-
-      {/* Ink lives in the painted textures; bloom only catches the HDR
-          lanterns, windows, fireflies and moon, then the neutral tone map
-          and vignette finish the grade. */}
-      <EffectComposer multisampling={4} enableNormalPass={false}>
-        <Bloom intensity={0.62} luminanceThreshold={0.88} luminanceSmoothing={0.22} mipmapBlur />
-        <ToneMapping mode={ToneMappingMode.NEUTRAL} />
-        <Vignette eskil={false} offset={0.18} darkness={0.56} />
-      </EffectComposer>
     </>
   );
 };

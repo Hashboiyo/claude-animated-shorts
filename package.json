@@ -5,6 +5,7 @@
   "description": "Cloud-rendered animated shorts built with Remotion + Three.js",
   "license": "MIT",
   "scripts": {
+    "postinstall": "node scripts/patch-remotion-gl.mjs",
     "dev": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
     "compositions": "node scripts/composition-info.mjs",

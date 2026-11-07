@@ -142,8 +142,8 @@ const SkyDome: React.FC = () => {
           uniform vec3 horizon;
           void main() {
             float h = normalize(vPos).y * 0.5 + 0.5;
-            vec3 low = mix(horizon, mid, smoothstep(0.0, 0.42, h));
-            vec3 col = mix(low, top, smoothstep(0.42, 1.0, h));
+            vec3 low = mix(horizon, mid, smoothstep(0.0, 0.30, h));
+            vec3 col = mix(low, top, smoothstep(0.30, 0.95, h));
             gl_FragColor = vec4(col, 1.0);
           }
         `,
@@ -175,8 +175,8 @@ const Moon: React.FC = () => {
         <spriteMaterial map={glow} color={PALETTE.moon} transparent opacity={0.55} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
       </sprite>
       <mesh>
-        <sphereGeometry args={[5.4, 40, 40]} />
-        <meshBasicMaterial color={new THREE.Color(2.1, 1.85, 1.42)} toneMapped={false} fog={false} />
+        <sphereGeometry args={[4.9, 40, 40]} />
+        <meshBasicMaterial color={new THREE.Color(1.65, 1.5, 1.2)} toneMapped={false} fog={false} />
       </mesh>
       <mesh rotation={[1.12, 0.18, 0.26]}>
         <torusGeometry args={[8.2, 0.07, 8, 96]} />
@@ -302,6 +302,10 @@ type HouseProps = {
 const House: React.FC<HouseProps> = ({ position, rotation, width, depth, height, roofHeight, wall, roof, frame, chimney = false, tower = false }) => {
   const windowY = height * 0.58;
   const windows = [-1, 1].map((side) => width * 0.24 * side);
+  const glow = useMemo(
+    () => makeRadialTexture([[0, "rgba(255,226,160,0.95)"], [0.45, "rgba(255,180,80,0.35)"], [1, "rgba(255,150,60,0)"]]),
+    [],
+  );
   return (
     <group position={position} rotation={[0, rotation, 0]}>
       <mesh castShadow receiveShadow position={[0, height / 2, 0]}>
@@ -332,6 +336,17 @@ const House: React.FC<HouseProps> = ({ position, rotation, width, depth, height,
             <planeGeometry args={[width * 0.2, height * 0.2]} />
             <meshBasicMaterial color={new THREE.Color(2.3, 1.55, 0.72)} toneMapped={false} />
           </mesh>
+          <sprite position={[0, 0, 0.07]} scale={[0.62, 0.62, 1]}>
+            <spriteMaterial
+              map={glow}
+              color="#ffd27a"
+              transparent
+              opacity={0.34}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </sprite>
         </group>
       ))}
 
@@ -490,6 +505,10 @@ const Pond: React.FC<{ frame: number }> = ({ frame }) => {
 
 const Lantern: React.FC<{ position: Vec3; frame: number; phase: number }> = ({ position, frame, phase }) => {
   const swing = Math.sin(frame / 38 + phase) * 0.05;
+  const glow = useMemo(
+    () => makeRadialTexture([[0, "rgba(255,226,160,0.95)"], [0.4, "rgba(255,170,70,0.4)"], [1, "rgba(255,140,50,0)"]]),
+    [],
+  );
   return (
     <group position={position}>
       <mesh castShadow position={[0, 1.3, 0]}>
@@ -511,6 +530,17 @@ const Lantern: React.FC<{ position: Vec3; frame: number; phase: number }> = ({ p
           <meshStandardMaterial color={PALETTE.woodDark} roughness={1} />
           <Outlines thickness={0.016} color={INK} />
         </mesh>
+        <sprite position={[0.34, -0.12, 0.2]} scale={[1.05, 1.05, 1]}>
+          <spriteMaterial
+            map={glow}
+            color="#ffb45e"
+            transparent
+            opacity={0.55}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </sprite>
       </group>
     </group>
   );
@@ -582,25 +612,13 @@ const Foreground: React.FC<{ frame: number }> = ({ frame }) => {
   );
   return (
     <>
-      <group position={[-2.7, 0.2, 6.3]} rotation={[0.1, 0.5, -0.62]}>
+      <group position={[-2.7, 0.2, 6.3]} rotation={[0.1, 0.5, -0.62 + Math.sin(frame / 70) * 0.01]}>
         <mesh geometry={branch} castShadow>
           <meshStandardMaterial color={PALETTE.woodDark} roughness={1} />
           <Outlines thickness={0.02} color={INK} />
         </mesh>
         {[0, 1, 2, 3].map((i) => (
           <mesh key={i} position={[0.35 + i * 0.08, 0.8 + i * 0.62, 0]} rotation={[0, 0.2 * i, -0.75 + i * 0.12]} scale={[1.1, 1.9, 1]}>
-            <planeGeometry args={[1, 1]} />
-            <meshBasicMaterial map={leaf} transparent alphaTest={0.2} side={THREE.DoubleSide} toneMapped={false} />
-          </mesh>
-        ))}
-      </group>
-      <group position={[3.6, 3.4, 5.4]} rotation={[-0.15, -0.4, 2.5 + Math.sin(frame / 70) * 0.03]}>
-        <mesh geometry={branch} scale={0.8}>
-          <meshStandardMaterial color={PALETTE.woodDark} roughness={1} />
-          <Outlines thickness={0.02} color={INK} />
-        </mesh>
-        {[0, 1, 2].map((i) => (
-          <mesh key={i} position={[-0.3 - i * 0.05, 0.9 + i * 0.6, 0]} rotation={[0, 0, 0.55 + i * 0.1]} scale={[1.0, 1.7, 1]}>
             <planeGeometry args={[1, 1]} />
             <meshBasicMaterial map={leaf} transparent alphaTest={0.2} side={THREE.DoubleSide} toneMapped={false} />
           </mesh>

@@ -75,8 +75,16 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Ensure headless browser
-        run: npx remotion browser ensure
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libdbus-1-3 libatk1.0-0 libasound2t64 libxrandr2 \
+            libxkbcommon-dev libxfixes3 libxcomposite1 libxdamage1 \
+            libgbm-dev libcups2 libcairo2 libpango-1.0-0 libatk-bridge2.0-0
+
+      - name: Ensure browser
+        run: npx remotion browser ensure --chrome-mode=headless-shell
 
       - name: TypeScript
         run: npx tsc --noEmit
@@ -88,6 +96,8 @@ jobs:
             --entry=src/index.ts \
             --comp="${{ inputs.composition_id }}" \
             --audio="${{ inputs.audio_file }}" \
+            --gl=swangle \
+            --chrome-mode=headless-shell \
             --json-out=out/composition.json
 
       - name: Render frame 0 (WebGL / fonts / textures proof)
@@ -98,6 +108,8 @@ jobs:
             --comp="${{ inputs.composition_id }}" \
             --frames=0 \
             --scale=0.5 \
+            --gl=swangle \
+            --chrome-mode=headless-shell \
             --out=out/frame-zero \
             --require-variance
 
@@ -145,11 +157,19 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Install Chrome dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 libdbus-1-3 libatk1.0-0 libasound2t64 libxrandr2 \
+            libxkbcommon-dev libxfixes3 libxcomposite1 libxdamage1 \
+            libgbm-dev libcups2 libcairo2 libpango-1.0-0 libatk-bridge2.0-0
+
       - name: Prepare temp + output
         run: mkdir -p "$REMOTION_TMP" out/chunks
 
-      - name: Ensure headless browser
-        run: npx remotion browser ensure
+      - name: Ensure browser
+        run: npx remotion browser ensure --chrome-mode=headless-shell
 
       - name: Render chunk
         env:
@@ -170,13 +190,14 @@ jobs:
               --pixel-format=yuv420p \
               --concurrency=1 \
               --muted \
+              --chrome-mode=headless-shell \
               --gl="$1" \
               --scale="$SCALE" \
               --x264-preset=veryfast \
               --timeout=180000 \
               --log=verbose
           }
-          render angle || render swangle
+          render swangle || render swiftshader || render angle-egl
 
       - name: Checksum + frame-range manifest
         env:

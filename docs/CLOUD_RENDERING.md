@@ -113,8 +113,10 @@ gh workflow run stills.yml \
   retried without discarding the others.
 - Identical settings on every runner: same commit, same lockfile, H.264,
   CRF, `yuv420p`, `--scale`, `--concurrency=1`, `--muted`.
-- `--gl=angle`, with an automatic retry using `--gl=swangle` if a runner's
-  ANGLE backend cannot initialize.
+- `--gl=swangle` (SwiftShader on ANGLE), with automatic retries using
+  `swiftshader` and `angle-egl` if a runner's backend cannot initialize.
+  The `postinstall` script `scripts/patch-remotion-gl.mjs` adds Chrome 158's
+  required `--enable-unsafe-swiftshader` flag to Remotion's swangle backend.
 - Short temp paths (`REMOTION_TMP=/tmp/remotion-tmp`) avoid Chromium socket
   and path-length failures.
 - Every chunk gets a JSON manifest with its exact start/end frame, byte size
@@ -194,7 +196,7 @@ are in `AGENTS.md` and `SKILL.md`.
 | --- | --- |
 | `Missing master audio` | The `audio_file` input is wrong, or the WAV is not committed. The path is repo-relative. |
 | `Master audio must be 48 kHz / stereo` | Re-export the mix as 48 kHz stereo PCM WAV. |
-| `angle failed; retrying with swangle` | Normal fallback on some runners. The render continues. |
+| `WebGL context could not be created` | Run `npm ci` (the `postinstall` patch adds `--enable-unsafe-swiftshader`), and keep `gl=swangle` + `chrome_mode=headless-shell`. |
 | A chunk fails | Open the failed job, read the Remotion log, fix the code, then `gh run rerun <run-id> --failed`. Completed chunks are not re-rendered. |
 | QA frame count off by one | Check that the composition's `durationInFrames` matches the audio/video plan. Do not trim the final MP4 by hand. |
 | Release step fails | The optional `release_tag` may already exist with a protected tag, or the workflow token lacks `contents: write`. The MP4 artifact is still available. |

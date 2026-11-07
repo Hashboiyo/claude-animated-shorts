@@ -17,8 +17,9 @@ const comp = args.comp ?? args.composition ?? "LanternCove";
 const scale = Number(args.scale ?? 0.5);
 const outDir = path.resolve(args.out ?? "out/stills");
 const contactPath = path.resolve(args.contact ?? path.join(outDir, "contact-sheet.png"));
-const requestedGl = args.gl ?? process.env.REMOTION_GL ?? "angle";
-const requireVariance = args["require-variance"] === "true";
+const requestedGl = args.gl ?? process.env.REMOTION_GL ?? "swangle";
+const chromeMode = args["chrome-mode"] ?? process.env.REMOTION_CHROME_MODE ?? "headless-shell";
+const requireVariance = args["require-variance"] !== "false";
 const requestedFrames = String(args.frames ?? "auto");
 
 if (!fs.existsSync(entry)) throw new Error(`Entry point not found: ${entry}`);
@@ -36,6 +37,7 @@ const readComposition = async (openGl) =>
   selectComposition({
     serveUrl,
     id: comp,
+    chromeMode,
     chromiumOptions: { gl: openGl },
   });
 
@@ -79,6 +81,7 @@ const renderOne = async (frame, openGl) => {
     frame,
     scale,
     imageFormat: "png",
+    chromeMode,
     chromiumOptions: { gl: openGl },
     timeoutInMilliseconds: 180_000,
     logLevel: "info",
@@ -128,6 +131,7 @@ const manifest = {
   height: composition.height,
   scale,
   gl: activeGl,
+  chromeMode,
   frames,
   images: images.map((image) => path.basename(image.path)),
   contactSheet: contactPath,
@@ -140,6 +144,7 @@ setGithubOutput({
   still_count: images.length,
   stills_dir: outDir,
   gl: activeGl,
+  chrome_mode: chromeMode,
 });
 
 console.log("");
