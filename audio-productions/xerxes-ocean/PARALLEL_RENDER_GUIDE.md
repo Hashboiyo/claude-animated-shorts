@@ -24,7 +24,7 @@ ffmpeg -i visual-master.mp4 -i mix.wav \
   -movflags +faststart narrated-final.mp4
 ```
 
-This copies the video stream and encodes only the audio. Preserve the original visual artifact, verify video stream identity, and check audio duration and loudness. An audio-only pull request should target the existing render branch and modify separate audio paths, so its changes do not trigger another expensive visual render.
+This copies the video stream and encodes only the audio. Preserve the original visual artifact, verify video stream identity, and check audio duration and loudness. Put audio changes in separate paths and guard the visual workflow's first job so audio-only branches skip its render jobs entirely. This prevents expensive video rerenders even if both workflows appear on a pull request.
 
 ## Copyable instruction
 

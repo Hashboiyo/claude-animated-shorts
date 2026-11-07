@@ -22,6 +22,7 @@ defaults:
 
 jobs:
   preflight:
+    if: ${{ !startsWith(github.head_ref, 'codex/xerxes-ocean-audio-') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     outputs:
