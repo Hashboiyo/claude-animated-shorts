@@ -1,0 +1,112 @@
+{
+  "duration": 68.5,
+  "sample_rate": 48000,
+  "voice": "bm_george",
+  "language": "en-gb",
+  "native_speed": 1.06,
+  "segments": [
+    {
+      "id": 1,
+      "a": 0,
+      "b": 4.4,
+      "text": "A Persian king once had the ocean whipped three hundred times and placed under arrest."
+    },
+    {
+      "id": 2,
+      "a": 4.4,
+      "b": 9.5,
+      "text": "It's 480 BC, and King Xerxes needs to march his army across a mile of sea into Greece."
+    },
+    {
+      "id": 3,
+      "a": 9.5,
+      "b": 13.8,
+      "text": "So his engineers spend months stretching two giant floating bridges from shore to shore."
+    },
+    {
+      "id": 4,
+      "a": 13.8,
+      "b": 18.7,
+      "text": "Before a single boot hits the planks, a storm snaps the ropes and smashes both bridges."
+    },
+    {
+      "id": 5,
+      "a": 18.7,
+      "b": 22.1,
+      "text": "A normal ruler would just rebuild, but Xerxes takes the weather personally."
+    },
+    {
+      "id": 6,
+      "a": 22.1,
+      "b": 27.2,
+      "text": "He orders soldiers down to the beach to whip the waves three hundred times with chains."
+    },
+    {
+      "id": 7,
+      "a": 27.2,
+      "b": 30.1,
+      "text": "Branders poke the surf with red-hot irons,"
+    },
+    {
+      "id": 8,
+      "a": 30.1,
+      "b": 33.4,
+      "text": "and guards toss in handcuffs to place the water under arrest."
+    },
+    {
+      "id": 9,
+      "a": 33.4,
+      "b": 38.2,
+      "text": "They even read an official curse out loud, calling the sea a bitter, salty little river."
+    },
+    {
+      "id": 10,
+      "a": 38.2,
+      "b": 41.2,
+      "text": "Luckily for the ocean, water doesn't care about handcuffs."
+    },
+    {
+      "id": 11,
+      "a": 41.2,
+      "b": 44.8,
+      "text": "Unluckily for the engineers, Xerxes has all of them beheaded."
+    },
+    {
+      "id": 12,
+      "a": 44.8,
+      "b": 51.1,
+      "text": "The new engineers really liked having heads, so they anchor six hundred and seventy-four warships nose-first into the current."
+    },
+    {
+      "id": 13,
+      "a": 51.1,
+      "b": 54.5,
+      "text": "They lash the hulls with braided cables, pave a road on top,"
+    },
+    {
+      "id": 14,
+      "a": 54.5,
+      "b": 59,
+      "text": "and march across for seven straight days."
+    },
+    {
+      "id": 15,
+      "a": 59,
+      "b": 63.5,
+      "text": "A year later, when Xerxes retreated from Greece, another storm wrecked the second bridge too."
+    },
+    {
+      "id": 16,
+      "a": 63.5,
+      "b": 68.5,
+      "text": "So the king who handcuffed the ocean has to take a boat home like everybody else"
+    }
+  ],
+  "word_count": 213,
+  "visual_run_id": 42292016933,
+  "visual_artifact": "xerxes-ocean-1440x2560-visual-master",
+  "model_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx",
+  "model_sha256": "beb0d1848dee9a49da392cc3df26958d46cfa35d321edf434f52949153f0df3a",
+  "voices_url": "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin",
+  "voices_sha256": "bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d"
+}

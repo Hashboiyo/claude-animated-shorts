@@ -1,0 +1,137 @@
+name: Add Xerxes narration and original music
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'audio-productions/xerxes-ocean/**'
+      - '.github/workflows/xerxes-audio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: xerxes-audio-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: audio-productions/xerxes-ocean
+    shell: bash
+
+jobs:
+  narration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: audio-productions/xerxes-ocean
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: audio-productions/xerxes-ocean/requirements.txt
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg espeak-ng
+      - run: python -m pip install --disable-pip-version-check -r requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: audio-productions/xerxes-ocean/work/models
+          key: kokoro-v1-beb0d184-bca610b8
+      - name: Generate steady English narration and real phoneme-derived word timings
+        run: python narration.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: xerxes-narration
+          path: |
+            audio-productions/xerxes-ocean/output/voice.wav
+            audio-productions/xerxes-ocean/output/*preview.mp3
+            audio-productions/xerxes-ocean/output/*.json
+          retention-days: 14
+
+  music:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: audio-productions/xerxes-ocean
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: audio-productions/xerxes-ocean/requirements.txt
+      - run: python -m pip install --disable-pip-version-check 'numpy>=2,<3' 'scipy>=1.14,<2' 'soundfile>=0.13,<1'
+      - name: Compose and synthesize the original score
+        run: python score.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xerxes-original-music
+          path: |
+            audio-productions/xerxes-ocean/output/music.wav
+            audio-productions/xerxes-ocean/output/music-cues.json
+          retention-days: 14
+
+  mix-and-mux:
+    needs: [narration, music]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: audio-productions/xerxes-ocean
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: audio-productions/xerxes-ocean/requirements.txt
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends ffmpeg
+      - run: python -m pip install --disable-pip-version-check 'numpy>=2,<3' 'scipy>=1.14,<2' 'soundfile>=0.13,<1'
+      - uses: actions/download-artifact@v4
+        with:
+          name: xerxes-narration
+          path: audio-productions/xerxes-ocean/output
+      - uses: actions/download-artifact@v4
+        with:
+          name: xerxes-original-music
+          path: audio-productions/xerxes-ocean/output
+      - name: Reuse the completed video master from the previous render
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: 42292016933
+          name: xerxes-ocean-1440x2560-visual-master
+          path: audio-productions/xerxes-ocean/work/visual
+      - name: Mix, normalize, attach audio without video re-encoding, and validate
+        run: python mix-and-mux.py
+      - uses: actions/upload-artifact@v4
+        id: final
+        with:
+          name: xerxes-ocean-final-with-narration-and-music
+          path: audio-productions/xerxes-ocean/output/xerxes-ocean-final-1440x2560.mp4
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        id: audio
+        with:
+          name: xerxes-ocean-audio-preview
+          path: |
+            audio-productions/xerxes-ocean/output/*preview.mp3
+            audio-productions/xerxes-ocean/output/words.json
+            audio-productions/xerxes-ocean/output/*cues.json
+            audio-productions/xerxes-ocean/output/audio-video-qa.json
+            audio-productions/xerxes-ocean/output/audio-rights.md
+            audio-productions/xerxes-ocean/LICENSE.template
+          retention-days: 14
+      - name: Download links and verification summary
+        run: |
+          echo "## Narrated Xerxes short" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download the final 1440×2560 MP4](${{ steps.final.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Audio previews, timings, rights and QA](${{ steps.audio.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo 'Video frames reused unchanged; original narration and music added.' >> "$GITHUB_STEP_SUMMARY"
+          cat FINAL_REPORT.txt >> "$GITHUB_STEP_SUMMARY"
