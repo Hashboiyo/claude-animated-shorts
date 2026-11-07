@@ -24,6 +24,14 @@ of GitHub Actions usage", click **Re-enable workflows**. If that option is not
 available, move the project to a standalone public repository (not a fork);
 the workflows do not change.
 
+## Verified smoke test
+
+The pipeline has been exercised end-to-end on GitHub-hosted runners:
+
+- **Stills:** run `42411583254`, 12 frames at scale 0.5 in **1m 34s**, no blank frames.
+- **Video:** run `42412154062`, 8 chunks × 30 frames, lossless concat + audio mux + QA in **~3m**, final **4.06 MB**, 240 frames, 1080x1920, 30 fps, H.264 + AAC 48 kHz stereo — **QA PASS**.
+- **Final artifact:** `final-LanternCove-42412154062` (artifact ID `13589513289`).
+
 ## Workflows
 
 | Workflow | File | Purpose |
