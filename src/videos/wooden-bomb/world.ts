@@ -218,11 +218,15 @@ const cockpitPoster: CardPainter = (p) => {
 /** shot 12: dark hallway, warm door light, the coat on a hook that reads as a man */
 const coatPoster: CardPainter = (p) => {
   const g = p.g;
-  for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#262231" : "#211d2b"; g.fillRect(0, i * 168, 1210, 168); }
+  for (let i = 0; i < 12; i++) { g.fillStyle = i % 2 ? "#453f55" : "#3d374c"; g.fillRect(0, i * 168, 1210, 168); }
   const gr = g.createRadialGradient(1075, 830, 60, 1075, 830, 700);
-  gr.addColorStop(0, "rgba(255,196,110,0.42)"); gr.addColorStop(0.5, "rgba(255,180,90,0.16)"); gr.addColorStop(1, "rgba(255,180,90,0)");
+  gr.addColorStop(0, "rgba(255,200,120,0.62)"); gr.addColorStop(0.5, "rgba(255,185,95,0.30)"); gr.addColorStop(1, "rgba(255,185,95,0)");
   g.fillStyle = gr; g.fillRect(0, 0, 1210, 2010);
-  g.fillStyle = "#151320"; g.fillRect(940, 240, 270, 1770);
+  // warm rim from the door catching the coat's right edge (keeps the silhouette readable in the low light)
+  const rim = g.createRadialGradient(660, 860, 30, 660, 860, 340);
+  rim.addColorStop(0, "rgba(255,204,130,0.5)"); rim.addColorStop(1, "rgba(255,204,130,0)");
+  g.fillStyle = rim; g.fillRect(280, 300, 620, 1400);
+  g.fillStyle = "#221d33"; g.fillRect(940, 240, 270, 1770);
   g.strokeStyle = "#3a3247"; g.lineWidth = 14; g.strokeRect(970, 290, 200, 760); g.strokeRect(970, 1110, 200, 620);
   p.ell(972, 1020, 10, 10, "#c8a24e", 0);
   // hook board + stem + the hook
@@ -234,14 +238,14 @@ const coatPoster: CardPainter = (p) => {
     [425, 636], [380, 654], [338, 810], [350, 1010], [382, 1300], [368, 1560], [620, 1560], [608, 1300],
     [640, 1010], [652, 810], [610, 654],
   ];
-  g.fillStyle = "#332d40";
+  g.fillStyle = "#5a526c";
   g.beginPath(); coat.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill();
-  g.strokeStyle = "#15121e"; g.lineWidth = 9; g.stroke();
-  g.fillStyle = "#3b3450";
+  g.strokeStyle = "#1a1622"; g.lineWidth = 9; g.stroke();
+  g.fillStyle = "#665d7a";
   g.beginPath(); g.moveTo(388, 680); g.lineTo(448, 742); g.lineTo(508, 680); g.lineTo(448, 656); g.closePath(); g.fill();
   // a thin_waiting_ lamp pool on the floor
   const sh = g.createRadialGradient(455, 1810, 30, 455, 1810, 340);
-  sh.addColorStop(0, "rgba(210,190,255,0.15)"); sh.addColorStop(1, "rgba(210,190,255,0)");
+  sh.addColorStop(0, "rgba(210,190,255,0.30)"); sh.addColorStop(1, "rgba(210,190,255,0)");
   g.fillStyle = sh; g.fillRect(0, 1500, 1210, 510);
 };
 
