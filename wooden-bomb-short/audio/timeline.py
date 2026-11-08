@@ -142,4 +142,6 @@ def cam_distance(t):
 
 
 def words(path="wooden-bomb-short/voice/words.json"):
-    return json.load(open(path, encoding="utf-8"))
+    raw = json.load(open(path, encoding="utf-8"))
+    # the pipeline speaks the bridge timings dictionary: speak spans use s/e keys
+    return [{"w": w["w"], "s": w["t0"], "e": w["t1"]} for w in raw["words"]]

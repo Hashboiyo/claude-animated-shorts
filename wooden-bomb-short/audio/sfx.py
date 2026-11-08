@@ -1,10 +1,10 @@
-# Every sound effect + ambience bed of the bridge short as a cue list timed to the picture (timeline.py), rendered
-# into one stereo SFX stem. Levels follow the user's standard mix: each EVENT has a "naive" level (LU relative to the
-# voice stem, measured as the event's max momentary loudness) and is placed SFX_DB = -6 dB under it; ambience BEDS
-# (integrated loudness) are not reduced. Distance to the camera adds gain, a low-pass and more valley reverb.
+# Every sound effect + ambience bed of "The Wooden Bomb" as a cue list timed to the picture (timeline.py), rendered
+# into one stereo SFX stem. Each EVENT sits SFX_DB = -6 dB under its own naive level; BEDS are not reduced. Camera
+# distance adds gain, a low-pass and more field reverb. Written against the same generators as the bridge short.
 import math
+
 import numpy as np
-from dsp import (SR, ns, tt, rng, dbg, lp, hp, bp, peq, shelf, pan, st, place, fades, widen, make_ir, convolve_st,
+from dsp import (SR, ns, tt, rng, dbg, lp, hp, bp, pan, st, place, fades, widen, convolve_st,
                  momentary_max, integrated, colored, smooth_noise, modal)
 import sfx_gen as G
 import timeline as T
@@ -24,305 +24,301 @@ class Cue:
 
 def cues():
     C = []
-    R = rng(1831)
+    R = rng(1943)
     rr = lambda: rng(int(R.integers(1 << 30)))
     add = C.append
 
     # ------------------------------------------------ ambience beds (not reduced by the -6 dB event rule)
-    def amb_day(dur, river=0.5, flags=0.25, seed=1):
+    def amb_field(dur, seed=1):
         def g():
             r = rng(seed)
-            n = ns(dur)
-            x = G.breeze(dur, r, 1.0, 0.15, 850)
-            rv = bp(colored(n, r, 0.8), 180, 1800, 1) * river * (0.8 + 0.2 * smooth_noise(n, r, 0.3))
-            x += st(rv)
-            x += pan(G.bird_chirps(dur, r, 0.45, "sparrow") * 0.08, 0.5)
-            x += pan(G.bird_chirps(dur, r, 0.3, "sparrow") * 0.05, -0.6)
-            x += pan(G.flag_flutter(dur, r) * flags, 0.3)
-            return fades(x, 0.4, 0.6), 0.0
+            x = G.breeze(dur, r, 1.0, 0.16, 900)
+            x += pan(G.bird_chirps(dur, r, 0.5, "sparrow") * 0.09, 0.5)
+            x += pan(G.bird_chirps(dur, r, 0.3, "sparrow") * 0.06, -0.6)
+            return fades(x, 0.5, 0.6), 0.0
         return g
-    add(Cue(0.0, "amb_day", "daytime valley air: breeze, river below, sparrows, tower flags (shots 1-8)", _cut(amb_day(37.2, 0.55), 37.2, 0.4, 0.5),
-            -30, "bed", send=0.0))
-    wd = T.shot_t(11)[0] + T.XFADE[11] / T.FPS - T.DROP1          # from the impact to the end of the crossfade into shot 11
-    add(Cue(T.DROP1, "amb_water", "river right around the soldiers sitting in it: flow, babble, lapping, sloshes, drips (shots 9-10)",
-            _env(lambda: (G.water_bed(wd, rng(41), 1.0, 0.9), 0.0), wd, 0.35, 0.3), -19, "bed", send=0.0))
-    add(Cue(43.3, "amb_golden", "golden-hour calm: soft breeze, blackbird phrases, faint crickets, distant river (shots 11-13)",
-            _env(lambda: (_golden(14.65, rng(43)), 0.0), 14.65, 0.5, 0.4), -29, "bed", send=0.0))
-    add(Cue(57.7, "amb_bank", "river bank: river close by, breeze, sparrows (shot 14)", _cut(amb_day(4.5, 1.3, 0.0, seed=44), 4.5, 0.25, 0.35),
-            -26, "bed", send=0.0))
-    add(Cue(61.95, "amb_town", "town day air on the rebuilt bridge: breeze, sparrows, flags, river (shot 15)", _cut(amb_day(5.55, 0.45, 0.3, seed=45), 5.55, 0.3, 0.05),
-            -29, "bed", send=0.0))
 
-    # ------------------------------------------------ marching column: one stomp per footfall while it is on screen
-    for (t, shot, tau, foot) in T.footfalls():
-        d = T.column_distance(t)
-        g, lpf, send = T.dist_fx(d)
-        inten = T.stomp(tau)
-        a = T.amp(tau) / 0.55
-        r = rr()
-        cut = T.FLASH + 0.02 if shot == 1 else None      # the hook is a flash-forward: everything stops on the white flash
-        if shot == 1 and t >= 3.5:
-            g -= 3.0                                     # keep "...walking across it." on top
+    def amb_dawn(dur, seed=8):
+        def g():
+            r = rng(seed)
+            x = G.breeze(dur, r, 0.8, 0.14, 680)
+            x += pan(G.bird_chirps(dur, r, 0.42, "blackbird") * 0.07, -0.45)
+            x += pan(G.bird_chirps(dur, r, 0.25, "blackbird") * 0.05, 0.55)
+            x += widen(G.crickets(dur, r, 2) * 0.006, r, 9, 1.0)
+            return fades(x, 0.6, 0.7), 0.0
+        return g
 
-        def gen(r=r, inten=inten, foot=foot, d=d):
-            x, pre = G.column_stomp(r, inten, foot, width=float(np.clip(5.0 / d, 0.15, 1.0)), boom_gain=0.6)
-            return peq(x, 2400, 5.0, 0.7), pre
-        add(Cue(t, "stomp", f"74 boots in step (shot {shot}, cam {d:.0f} m, stomp x{inten:.2f})", gen, -8,
-                extra=max(g, -13.0) + 20 * math.log10(inten), lpf=lpf, send=send, group="stomps", cut=cut))
-        if a > 0.02 and tau < T.SNAP:
-            lvl = 6 * math.log10(min(a, 1.0))
-            add(Cue(t, "deck_flex", f"deck flex whump + plank creak + hangers (bounce amp {T.amp(tau):.2f})",
-                    (lambda r=r, a=a: (G.deck_flex(r, min(a, 1.0)), 0.0)), -10, extra=max(g, -13.0) * 0.6 + lvl, lpf=lpf, send=send,
-                    group="deck", cut=cut))
-    add(Cue(16.0, "bounce_first", "first big flex 'boing' + long plank groan - the bridge starts bouncing (faces react 16.17)",
-            lambda: (G.deck_flex(rng(160), 0.9) + st(np.pad(G.creak(0.55, rng(161), 60, 140, G.TIMBER, rough=0.2) * 0.8, (0, ns(0.2)))), 0.0),
-            -10, extra=-4, lpf=11000, send=0.18))
+    def amb_night(dur, seed=13):
+        def g():
+            r = rng(seed)
+            x = G.breeze(dur, r, 0.55, 0.12, 520)
+            x += widen(G.crickets(dur, r, 5) * 0.012, r, 11, 1.0)
+            return fades(x, 0.6, 0.8), 0.0
+        return g
 
-    # ------------------------------------------------ hook extras (shot 1 is the flash-forward at tau 29.5-33.8)
-    add(Cue(0.0, "chain_groan_hook", "chains groaning under the bouncing column (hook)",
-            lambda: (G.chain_groan(4.3, rng(11), 0.55, 0.8, 26, 34, beats=[k * 0.5 for k in range(9)])
-                     * np.interp(tt(4.3), [0, 3.55, 4.1, 4.3], [1, 1, 0.5, 0.5]), 0.0), -10, p=-0.3, send=0.15))
-    for tm, nm in [(T.fr(48), "push-in to the boots"), (T.fr(88), "push-in, boot level")]:
-        add(Cue(tm, "whoosh_cam", f"camera {nm}", (lambda r=rr(): (G.whoosh(0.45, r, 0.07, 400, 2400, 0.8, 0.13, 0.2), 0.07)), -12, send=0.1))
-    add(Cue(T.FLASH, "flash_whoosh", "reverse swell into the white flash (frame 130) + soft low whoomp",
-            lambda: _flash(rng(130)), -5, send=0.2))
+    add(Cue(0.0, "amb_field", "daytime polder air: breeze, sparrows, distant farm life (shots 1-7)",
+            _envlambda(amb_field(34.0, 7), 34.0, 0.5, 1.2), -30, "bed", send=0.0))
+    add(Cue(34.6, "amb_dawn", "dawn air: colder breeze, first blackbirds, faint crickets die out (shots 8-12)",
+            _envlambda(amb_dawn(20.0, 13), 20.0, 0.8, 0.7), -29, "bed", send=0.0))
+    add(Cue(54.9, "amb_night", "night air over the British decoys: crickets, low breeze (shot 13)",
+            _envlambda(amb_night(8.4, 17), 8.4, 0.6, 0.8), -27, "bed", send=0.0))
+    add(Cue(63.3, "amb_dawn2", "the morning after: birds back, breeze (shots 14, tail)",
+            _envlambda(amb_dawn(4.9, 23), 4.9, 0.5, 1.4), -27, "bed", send=0.0))
 
-    # ------------------------------------------------ town crowd (shot 2)
-    add(Cue(T.FLASH, "crowd_murmur", "townsfolk on both banks: murmur of ~22 voices, a few early hurrahs (shot 2)",
-            lambda: (_murmur(6.0, rng(21), 22, early=True), 0.0), -10, lpf=3600, send=0.35))
-    add(Cue(7.6, "crowd_cheer", "townsfolk cheer on 'pride of the whole town': hurrahs, kids, applause swell",
-            lambda: (_cheer(3.4, rng(22)), 0.0), -6, lpf=5000, send=0.35))
+    # ------------------------------------------------ hook: flash + early field cues
+    add(Cue(T.FLASH, "flash_whoosh", "reverse swell into the white flash (frame 127) + soft low whoomp",
+            lambda: (_flash(rng(127)), -0.0), -5, send=0.2))
 
-    # ------------------------------------------------ camera-move / transition whooshes (ease-out bursts)
-    for f, desc in [(283, "wide -> low front of the column"), (444, "cut to the side view"), (534, "swing round to the faces"),
-                    (643, "push to the whistler's face"), (717, "crane up over the column"), (823, "low wide from behind"),
-                    (987, "whip to the anchor bolt"), (1062, "crane out over the bridge"), (1685, "drift in (golden march)"),
-                    (1770, "move to the sign"), (1905, "move along the tourists"), (1962, "crane out, ending")]:
-        add(Cue(T.fr(f), "whoosh_cam", f"camera {desc}", (lambda r=rr(): (G.whoosh(0.6, r, 0.09, 330, 2000, 0.8, 0.18, 0.15), 0.09)),
-                -11, send=0.12))
-    for f, desc in [(1303, "crossfade to golden light"), (1411, "crossfade to the park"), (1620, "crossfade back to the bridge"),
-                    (1735, "crossfade to the bank"), (1863, "crossfade to the rebuilt bridge")]:
-        add(Cue(T.fr(f), "whoosh_xfade", desc, (lambda r=rr(): (G.whoosh(0.8, r, 0.32, 300, 1600, 0.9, 0.22, 0.1), 0.32)), -12, send=0.15))
+    # ------------------------------------------------ build beats: hammers + plank slides + the painter
+    for shot, t1 in [(3, 15.0), (4, 20.0)]:
+        for k, tm in enumerate(T.hammer_hits(shot)):
+            d = T.cam_distance(tm)
+            g, lpf, send = T.dist_fx(d)
+            pp = float(np.clip((k % 5 - 2) * 0.35, -0.85, 0.85))
+            add(Cue(tm, "hammer", f"carpenter nail {k + 1} shot {shot} (cam {d:.0f} m)",
+                    (lambda r=rr(), big=float(np.clip(1.4 - d / 30, 0.5, 1.1)): (G.hammer_hit(r, big), 0.0)),
+                    -7, p=pp, extra=max(g, -10.0), lpf=lpf, send=send, group="hammers"))
+    # the painter swipes + bucket clunk (shot 3)
+    for tm in [13.12, 13.66]:
+        add(Cue(tm, "paint_swipe", "the painter strokes the grey along the boards",
+                (lambda r=rr(): (G.stick_slip(0.45, r.uniform(5.2, 6.4), r, 0.05), 0.05)), -13, p=0.3, lpf=9000, send=0.12,
+                group="painter"))
+    add(Cue(12.9, "paint_bucket", "the paint bucket lands by the plank line",
+            (lambda r=rr(): (G.clink(r, r.uniform(340, 420), 0.14, bright=0.6), 0.0)), -14, p=0.25, send=0.15))
 
-    # ------------------------------------------------ chains + bolt (shots 7-8)
-    beats = [k * 0.5 for k in range(58, 70)]
-    add(Cue(28.9, "chain_groan", "suspension chains groaning, rising in pitch and strength with each footfall (28.9 -> snap)",
-            lambda: (G.chain_groan(T.SNAP + 0.03 - 28.9, rng(29), 0.45, 1.0, 20, 46, beats=beats, t0=28.9), 0.0), -6, p=-0.35, send=0.12))
-    add(Cue(29.95, "chain_groan_swell", "chains groan out loud right after the word 'groaning,' (swells on footfalls 30.0 + 30.5)",
-            lambda: (G.chain_groan(1.1, rng(295), 0.9, 1.0, 22, 30, beats=[30.0, 30.5], t0=29.95), 0.0), -4, p=-0.35, send=0.15))
-    for k, tm in enumerate([33.0, 33.5, 34.0, 34.5]):
-        add(Cue(tm, "bolt_strain", f"bolt jerks with the footfall: metal strain creak {k + 1}/4 (close-up)",
-                (lambda r=rr(), a=0.5 + 0.17 * k: (G.bolt_strain(r, a), 0.0)), -12 + k, p=-0.15, send=0.05, group="bolt_strain"))
-    for tm in (T.SNAP - 0.31, T.SNAP - 0.15, T.SNAP - 0.05):
-        add(Cue(tm, "bolt_tick", "metal fatigue tick", (lambda r=rr(): (G.clink(r, r.uniform(2600, 3600), 0.1), 0.0)), -14, p=-0.15, send=0.05,
-                group="bolt_strain"))
-    add(Cue(T.SNAP, "bolt_snap", "BOLT SNAPS: crack + two halves ringing as they fly (Doppler drop) + release thunk + chain jolt",
-            lambda: (G.bolt_snap(rng(3462)), 0.0), 0, p=-0.2, send=0.18))
-    add(Cue(T.SNAP, "chain_whip", "snapped backstay whips up: swish + rattle along the chain + clank as it flops",
-            lambda: (G.chain_whip(rng(3463)), 0.0), -4, p=-0.4, send=0.2))
-    for tm, pp in [(T.SNAP + 0.93, -0.5), (T.SNAP + 1.05, 0.1)]:
-        add(Cue(tm, "bolt_land", "bolt half lands on the bank: tink, tink-tink", (lambda r=rr(): (_bounces(r), 0.0)), -16, p=pp, send=0.25))
-    add(Cue(T.SNAP + 0.25, "column_halt", "column stops dead: boots scuff and shuffle", lambda: (_scuffle(rng(3487)), 0.0), -16, lpf=7000, send=0.25))
+    # hangar shells: two big timber creaks + saw strokes (shot 4)
+    for tm, a in [(15.4, 0.7), (16.6, 0.9), (17.9, 1.0)]:
+        add(Cue(tm, "shell_creak", "hangar frame timber creak as the shell rises",
+                (lambda r=rr(), a=a: (G.creak(0.7, r, 45, 85, G.TIMBER, [(0, 0), (0.5, 1), (1, 0.7)], 0.22, 0.06) * 0.8 * a, 0.1)),
+                -12, p=-0.35, lpf=7500, send=0.2, group="shells"))
+    for tm in [16.2, 17.1, 18.0, 18.9]:
+        add(Cue(tm, "saw", "a saw strokes through a plank",
+                (lambda r=rr(): (G.stick_slip(0.5, r.uniform(7.0, 8.6), r, 0.09, amp=0.55), 0.05)), -14, p=0.5,
+                lpf=8500, send=0.15, group="saw"))
 
-    # ------------------------------------------------ the drop (36.35) and the hit (36.95)
-    add(Cue(T.DROP0 - 0.55, "timber_tear", "near half tears loose: huge timber creak + splintering that peaks as it lets go (DROP0 36.35)",
-            lambda: (G.timber_tear(rng(3620), 0.62), 0.0), -6, p=0.1, send=0.2))
-    add(Cue(T.DROP1, "fall_air", "air rush of the falling deck (accelerating DROP0 36.35 -> DROP1 36.95)",
-            lambda: (G.whoosh(T.DROP1 - T.DROP0 + 0.06, rng(3635), T.DROP1 - T.DROP0, 220, 1300, 1.0, 0.05, 0.1), T.DROP1 - T.DROP0), -8, send=0.1))
-    add(Cue(T.DROP1, "wood_crack", "deck slams the water: splintering crack + timber boom", lambda: (G.wood_crack(rng(3695)), 0.0), -4, send=0.15))
-    add(Cue(T.DROP1, "splash_big", "BIG SPLASH: thump, slap, water body, bubble cloud, spray raining back (6 sources along the deck)",
-            lambda: (_splashes(rng(3696)), 0.0), -2, send=0.15))
-    add(Cue(T.DROP1 + 0.02, "oofs", "74 men landing in two feet of water: a dozen 'oof' / 'ugh' / 'oh' / 'ow'",
-            lambda: (_oofs(rng(3697)), 0.0), -4, send=0.18))
-    add(Cue(T.DROP1 + 0.1, "debris", "planks and kit clattering into the shallows", lambda: (_debris(rng(3705)), 0.0), -12, send=0.25))
-    # shot 10 ("Unluckily..."): the same soldiers, hurt - a few real pained groans, the first one in the gap before the line
-    add(Cue(40.42, "groans", "hurt soldiers sitting in the shallows: 'ugh' / 'ow' groans",
-            lambda: (_groans(rng(4042), [(0.0, "ugh", 1.0), (0.09, "ow", 0.7), (0.2, "ugh", 0.5)]), 0.0), -12, lpf=5000, send=0.2,
-            group="groans"))
-    for tm, kd in [(41.95, "ow"), (42.7, "ugh")]:
-        add(Cue(tm, "groans", "another groan from the river", (lambda r=rr(), kd=kd: (_groans(r, [(0.0, kd, 1.0)]), 0.0)), -18, lpf=4500,
-                send=0.25, group="groans"))
+    # trucks + gun + tower + barrels pop (shot 4): wooden thocks + tyre roll
+    for tm, nm in [(16.4, "truck 1 rolls in"), (17.0, "truck 2 follows"), (17.32, "gun pit drops"), (15.55, "watchtower drops")]:
+        add(Cue(tm, "prop_thock", f"{nm}: timber thock + small rattle",
+                (lambda r=rr(): (G.wood_crack(r) * 0.5 + G.rattle(0.4, r, 14.0) * 0.5, 0.0)), -12, p=float(R.uniform(-0.6, 0.6)),
+                lpf=9000, send=0.2, group="props"))
+    for k in range(7):  # the rail plane's engine pops in after the roll
+        add(Cue(18.28 + k * 0.16, "engine_chug", "the wooden fighter's engine huff",
+                (lambda r=rr(): (_engine_chug(r, 0.16, 1.0 - 0.05 * k), 0.02)), -16, p=0.6, lpf=3000, send=0.12, group="engine"))
 
-    # ------------------------------------------------ sway (shot 11): the bridge on its own, 0.7 Hz
-    for k in range(5):
-        tm = 43.4 + (0.25 + k / 2) / 0.7
-        add(Cue(tm, "sway_creak", "the bridge sways by itself (0.7 Hz): long soft creak at each extreme",
-                (lambda r=rr(): (G.creak(0.55, r, 55, 95, G.TIMBER, [(0, 0), (0.4, 1), (0.8, 0.6), (1, 0)], 0.2, 0.04) * 0.8, 0.12)), -12,
-                p=0.2 if k % 2 else -0.2, lpf=7000, send=0.3, group="sway_creak"))
-
-    # ------------------------------------------------ swing (shot 12): squeak through each swing, push on each downbeat
-    for k in range(-2, 7):
-        tm = T.PUSH0 + 0.3875 + k * 0.775
-        if tm > 53.95:
+    # ------------------------------------------------ the rail plane (shot 5): squeaks + slow wheel tok-tok + cap waves
+    def rail_squeaks():
+        out = []
+        for k in range(26):
+            t = 20.2 + k * 0.145
+            v = T.rail_speed(t + 0.02)
+            if abs(v) < 0.002:
+                continue
+            a = min(1.0, abs(v) / 0.5)
+            out.append((t, a, 1 if v > 0 else -1))
+        return out
+    for (tm, a, d) in rail_squeaks():
+        add(Cue(tm, "rail_squeak", "hidden-rail squeak under the wooden fighter",
+                (lambda r=rr(), a=a, d=d: (G.swing_squeak(r, 0.35 * a, d > 0) * 0.8, 0.05)), -13,
+                p=0.45, extra=-6.0 + 9.0 * a, lpf=9500, send=0.14, group="rail"))
+    for k in range(16):  # the wheels flapping over the ties
+        tm = 20.3 + k * 0.23
+        if tm < 20.2 or tm > 23.9:
             continue
-        a = T.swing_amp_deg(tm) / 50.0
-        add(Cue(tm, "swing_squeak", f"swing hanger squeak ({'forward' if k % 2 == 0 else 'back'}, arc {T.swing_amp_deg(tm):.0f} deg)",
-                (lambda r=rr(), a=a, fw=(k % 2 == 0): (G.swing_squeak(r, a, fw), 0.12 + 0.1 * a)), -12, extra=8 * math.log10(max(a, 0.12)),
-                p=0.15, send=0.2, group="swing_squeak"))
-    for k, tm in enumerate(T.PUSHES):
-        add(Cue(tm, "swing_push", f"push {k + 1}/4: hands on the back + chain jingle", (lambda r=rr(): (G.push_thump(r), 0.0)), -14, p=0.1,
-                send=0.15, group="swing_push"))
+        add(Cue(tm, "wheel_tok", "wheel_tok over the wooden ties",
+                (lambda r=rr(): (_tok(r), 0.0)), -17, p=0.55, lpf=6000, send=0.12, group="rail"))
+    for tm in [21.05, 22.15]:
+        add(Cue(tm, "cap_wave", "an engineer waves his cap: cloth swish",
+                (lambda r=rr(): (G.whoosh(0.3, r, 0.09, 800, 3200, 0.7, 0.05, 0.25), 0.05)), -15, p=0.3, send=0.12, group="rail"))
 
-    # ------------------------------------------------ the rule (shot 14): hammer on the sign
-    for k, th in enumerate(T.HITS):
-        big = 1.0 if k < 2 else 1.25
-        add(Cue(th - 0.09, "hammer_swish", "hammer swing", (lambda r=rr(): (G.whoosh(0.18, r, 0.08, 600, 2500, 0.6, 0.04, 0.2), 0.08)), -20,
-                p=0.3, send=0.1, group="hammer"))
-        add(Cue(th, "hammer", f"hammer blow {k + 1}/3 nailing the sign: steel 'tink' + board 'thock' + post", (lambda r=rr(), big=big: (G.hammer_hit(r, big), 0.0)),
-                -5 if k < 2 else -4, p=0.3, send=0.22, group="hammer"))
+    # ------------------------------------------------ the photo pass (shot 6): plane whoosh + two shutters
+    add(Cue(25.1, "photo_pass", "the recon plane crosses high: doppler whoosh + faint engine tone",
+            lambda: (_photo_pass(2.6, rng(635)), 0.4), -8, p=0.0, send=0.2))
+    for k, tm in enumerate(T.SHUTTERS):
+        add(Cue(tm, "shutter", f"camera shutter click {k + 1}/2 (the eyes that get two seconds)",
+                (lambda r=rr(): (G.clink(r, r.uniform(2400, 3100), 0.07, bright=1.3), 0.0)), -11, p=0.2, send=0.1,
+                group="shutter"))
+    add(Cue(T.SHUTTERS[1] + 0.06, "motor", "film motor wind after the second frame",
+            (lambda r=rr(): (G.rattle(0.22, r, 42.0), 0.0)), -19, p=0.2, lpf=8000, send=0.1))
 
-    # ------------------------------------------------ tourists (shot 15): out-of-step strolling + light town murmur
-    for (t, i, x, z, sp) in T.tourist_steps():
-        if t < 61.97 or t > T.DUR - 0.05:
-            continue
-        cam = T.tourist_cam(t)
-        d = float(np.linalg.norm(cam - np.array([x, 6.0, z])))
-        g, lpf, send = T.dist_fx(d)
-        pp = float(np.clip(-(x - cam[0]) / max(d, 1) * 1.6, -0.8, 0.8))
-        add(Cue(t, "stroll_step", "tourist footstep, out of step (24 strollers, own pace each)",
-                (lambda r=rr(): (shelf(G.stroll_step(r, r.uniform(0.2, 1.0)), 1500, 4.0, "high"), 0.0)),
-                -9, p=pp, extra=max(g, -8.0) + float(R.uniform(-2, 1)), lpf=lpf, send=send, group="stroll_steps"))
-    add(Cue(62.0, "town_murmur", "townsfolk chatting on the banks (shot 15)", lambda: (_murmur(5.5, rng(62), 14, early=False), 0.0), -11,
-            lpf=3200, send=0.35))
+    # ------------------------------------------------ the party mugs (shot 7)
+    for k in range(7):
+        tm = T.MUGS_UP + 0.02 + k * 0.11
+        add(Cue(tm, "mug_clink", f"mug clink {k + 1}/7 raising (comic timing)",
+                (lambda r=rr(), k=k: (G.clink(r, r.uniform(1150, 1500), 0.09, bright=1.15), 0.0)), -12,
+                p=float(np.clip((k % 4 - 1.4) * 0.4, -0.8, 0.8)), lpf=11000, send=0.14, group="mugs"))
+
+    # ------------------------------------------------ the dawn: final plank strikes (shot 8)
+    for k, th in enumerate(T.FINAL_PLANK_STRIKES):
+        add(Cue(th, "hammer", f"the final plank tap {k + 1}/3 (dawn, close, the last board)",
+                (lambda r=rr(): (G.hammer_hit(r, 0.75), 0.0)), -6, p=-0.15, lpf=12000, send=0.18, group="hammers"))
+
+    # ------------------------------------------------ the crossing, the circle, the release (shots 8-9)
+    add(Cue(T.ENGINE_T0, "engine", "lone RAF plane: steady prop drone, nearing then circling overhead",
+            lambda: (_engine_bed(T.ENGINE_T1 - T.ENGINE_T0, rng(4496)), 0.0), -13, p=-0.15, send=0.12, group="engine"))
+    for f, desc in [(1119, "ride alongside the crossing plane"), (1198, "follow the lap"), (1246, "fall away to the ground")]:
+        add(Cue(T.fr(f), "whoosh_cam", f"camera {desc}", (lambda r=rr(): (G.whoosh(0.55, r, 0.1, 380, 2000, 0.8, 0.15, 0.2), 0.1)), -12, send=0.12))
+
+    # ------------------------------------------------ the bomb: whistle fall, THE CLONK, splinters
+    add(Cue(T.RELEASE + 0.05, "fall_whistle", "cartoon bomb whistle: enters on the release, dies the frame before the clonk",
+            lambda: (_bomb_whistle(T.FALL_T - 0.12, rng(4487)), T.FALL_T - 0.12), -9, p=0.05, send=0.1))
+    add(Cue(T.RELEASE + 0.6, "fall_air", "air rush building under the wooden bomb",
+            (lambda r=rr(): (G.whoosh(1.7, r, 0.16, 260, 1400, 0.9, 0.02, 0.2), 1.68)), -14, lpf=5000, send=0.1))
+    add(Cue(T.CLONK, "THE_CLONK", "the wooden bomb on the wooden runway: hollow clonk + rim of splinters",
+            lambda: (_clonk(rng(4462)), 0.0), -2, p=0.1, send=0.2))
+    add(Cue(T.CLONK + 0.05, "splinters", "splinter shards scatter, clatter and stop",
+            (lambda r=rr(): (G.rattle(1.0, r, 26.0, heavy=True), 0.0)), -10, p=0.2, lpf=12000, send=0.25))
+    add(Cue(T.BOUNCE2, "clonk2", "second bounce, smaller: a wooden thud + two ticks",
+            (lambda r=rr(): (_hollow_thud(r, 0.42) + G.clink(r, r.uniform(1500, 1800), 0.07, bright=0.8), 0.0)),
+            -9, p=-0.1, lpf=9000, send=0.2))
+    for tm in [43.75, 44.4]:
+        add(Cue(tm, "birddrop", "a relieved blackbird phrase",
+                (lambda r=rr(): (G.bird_chirps(1.2, r, 2.5, "blackbird") * 0.5, 0.05)), -18, p=-0.4, lpf=9000, send=0.3))
+
+    # ------------------------------------------------ the trench crew + the officer's walk (shot 10)
+    add(Cue(T.CLONK + 0.08, "trench_pop", "the trench crew bursts up: boards and boots",
+            (lambda r=rr(): (G.rattle(0.5, r, 36.0) + G.stroll_step(r, 1.1) * 0.4, 0.0)), -12, p=-0.25, lpf=9000, send=0.2))
+    for k in range(6):  # the officer walks the apron to the bomb
+        tm = 43.2 + k * 0.33
+        add(Cue(tm, "boot_step", "the officer's boot (greatcoat), approaching the bomb",
+                (lambda r=rr(): (G.stroll_step(r, 0.8), 0.0)), -13,
+                p=-0.35 + 0.11 * k, lpf=7500, send=0.18, group="officer_boots"))
+    add(Cue(45.3, "dust_off", "two little dust-off brushes on the stencil band",
+            (lambda r=rr(): (G.stick_slip(0.4, 5.5, r, 0.04, amp=0.3), 0.05)), -16, p=0.15, lpf=8000, send=0.12))
+
+    # ------------------------------------------------ the cockpit card (shot 11): soft engine close + blink tick
+    add(Cue(47.1, "cockpit_air", "engine close-up under the card: warm hum + two instrument ticks",
+            lambda: (_cockpit_bed(7.9, rng(4711)), 0.0), -17, p=0.2, send=0.05, group="engine"))
+
+    # ------------------------------------------------ the night decoy war (shot 13): bomber far + thuds on empty plywood
+    add(Cue(55.4, "bomber_drone", "the German bomber far overhead: deep, slow, wide",
+            lambda: (_bomber_bed(6.2, rng(5540)), 0.0), -18, p=-0.4, send=0.15, group="engine"))
+    for k, th in enumerate(T.THUDS):
+        add(Cue(th, "thud", f"bomb lands on the empty plywood field {k + 1}/4: distant wooden thump",
+                (lambda r=rr(): (_hollow_thud(r, 1.0, mid=62) + G.wood_crack(r) * 0.25, 0.0)),
+                -6, p=float(np.clip((k % 2) * 0.5 - 0.25, -0.6, 0.6)), lpf=5200, send=0.3, group="thuds"))
+        add(Cue(th + 0.35, "fire_flicker", "the decoy lamp flare answers the thud (small crackle)",
+                (lambda r=rr(): (G.rattle(0.5, r, 9.0) * 0.35, 0.0)), -20, p=0.5, lpf=6000, send=0.25, group="thuds"))
+
+    # ------------------------------------------------ the tail (shot 14): wind + one wooden tick on the punch word
+    add(Cue(T.END_WORD, "bomb_tick", "the bomb settles one tiny tick as 'the compliment.' lands",
+            (lambda r=rr(): (G.clink(r, r.uniform(900, 1100), 0.06, bright=0.7), 0.0)), -16, p=0.1, lpf=7000, send=0.2))
     return C
 
 
-# ================================================================ helpers for composite cues
-def _cut(gen, dur, fin, fout):
+def _envlambda(gen, dur, fin, fout):
     def g():
         x, a = gen()
         return fades(x, fin, fout), a
     return g
 
 
-def _env(gen, dur, fin, fout):
-    return _cut(gen, dur, fin, fout)
+# ================================================================ composite generators
+def _tok(r):
+    """wooden wheel on ties: a short two-surface tick"""
+    y = G.clink(r, r.uniform(480, 560), 0.05, bright=0.6) + 0.4 * lp(colored(ns(0.05), r, 0.7), 400)
+    y = np.concatenate([y, np.zeros(ns(0.02))])
+    y[ns(0.03):] += G.clink(r, r.uniform(430, 500), 0.05, bright=0.55) * 0.7
+    return y, 0.0
 
 
-def _golden(dur, r):
-    n = ns(dur)
-    x = G.breeze(dur, r, 0.7, 0.1, 650)
-    x += st(lp(bp(colored(n, r, 0.8), 150, 1400, 1), 1200) * 0.35)
-    x += pan(G.bird_chirps(dur, r, 0.35, "blackbird") * 0.06, -0.5)
-    x += pan(G.bird_chirps(dur, r, 0.25, "blackbird") * 0.04, 0.6)
-    x += widen(G.crickets(dur, r, 3) * 0.008, r, 9, 1.0)
-    return x
+def _hollow_thud(r, g=1.0, mid=74):
+    """wooden-on-wooden landing: hollow body + short plank ring"""
+    t = tt(0.45)
+    tone = (np.sin(2 * np.pi * mid * t) * np.exp(-t / 0.05) + 0.35 * np.sin(2 * np.pi * mid * 2.7 * t) * np.exp(-t / 0.035))
+    body = modal(0.3, [(mid * 1.1, 1.0, 0.05), (mid * 2.3, 0.5, 0.03)], r)
+    return tone * g * 0.8 + body * g * 0.7
+
+
+def _clonk(r):
+    """the whole wooden-missile landing: nose clonk, forearm boing, splinter dust"""
+    n = ns(1.6)
+    out = np.zeros(n)
+    nose = _hollow_thud(r, 1.35, mid=74)
+    place(out, nose, 0.0)
+    for k, (tm, a) in enumerate([(0.06, 0.5), (0.11, 0.3), (0.17, 0.18)]):
+        place(out, G.clink(r, r.uniform(300, 420) - k * 40, 0.09, bright=0.5) * a, tm)
+    place(out, lp(G.whoosh(0.4, r, 0.2, 140, 900, 0.9, 0.1, 0.0), 1100, 1) * 0.55, 0.12)
+    return out
 
 
 def _flash(r):
     dur = 0.75
-    y = G.whoosh(dur, r, 0.33, 500, 4200, 0.9, 0.09, 0.4)
+    y = G.whoosh(dur, r, 0.33, 500, 4200, 0.9, 0.09, 0.4)  # type: ignore[arg-type]
     t = tt(dur)
     boom = np.where(t > 0.33, np.exp(-(t - 0.33) / 0.12) * np.sin(2 * np.pi * 62 * (t - 0.33)), 0) * 0.8
     return widen(y + boom, r, 12, 0.9), 0.33
 
 
-def _murmur(dur, r, voices, early=False):
+def _photo_pass(dur, r):
+    """high recon plane: distant drone with a narrow doppler sweep, quiet"""
     n = ns(dur)
-    out = np.zeros((2, n))
-    for v in range(voices):
-        kind = r.uniform()
-        base, scale = ((r.uniform(95, 140), r.uniform(0.95, 1.05)) if kind < 0.45 else
-                       (r.uniform(175, 235), r.uniform(1.12, 1.2)) if kind < 0.85 else (r.uniform(260, 330), r.uniform(1.25, 1.35)))
-        y = G.babble(dur, r, base, scale, r.uniform(3.6, 4.8), r.uniform(0.55, 0.8), fmax=3400)
-        y = lp(y, r.uniform(2200, 3600), 1) * r.uniform(0.3, 1.0)
-        out += pan(y, r.uniform(-0.85, 0.85))
-    if early:
-        for k in range(4):
-            h = G.hurrah(r, r.uniform(110, 230), r.uniform(1.0, 1.18))
-            place(out, pan(lp(h, 3000, 1) * 0.5, r.uniform(-0.8, 0.8)), r.uniform(0.2, 1.6))
-    return fades(out, 0.25, 0.8)
+    t = tt(dur)
+    drone = lp(colored(n, r, 0.55), 340) * (0.5 + 0.5 * np.sin(2 * np.pi * 3.1 * t) ** 2)
+    sweep = G.whoosh(dur, r, 0.5, 300, 2400, 0.85, 0.35, 0.3)  # type: ignore[arg-type]
+    return pan(drone, float(np.interp(t, [0, dur * 0.45, dur], [-0.7, -0.2, 0.75]))) + sweep * 0.7
 
 
-def _cheer(dur, r):
+def _engine_bed(dur, r):
+    """steady prop drone of the lone RAF plane (weaker first, overhead in the lap)"""
     n = ns(dur)
-    t = np.arange(n) / SR
-    out = np.zeros((2, n))
-    for v in range(26):
-        kid = v % 6 == 5
-        base = r.uniform(270, 340) if kid else (r.uniform(105, 160) if v % 2 else r.uniform(180, 250))
-        scale = 1.3 if kid else (1.0 if v % 2 else 1.15)
-        for rep in range(1 + int(r.uniform() < 0.4)):
-            h = G.hurrah(r, base * r.uniform(0.97, 1.05), scale, kid)
-            tm = r.uniform(0.25, 1.1) + rep * r.uniform(0.75, 1.0)
-            place(out, pan(lp(h, 4000, 1) * r.uniform(0.35, 1.0), r.uniform(-0.9, 0.9)), tm)
-    env = np.interp(t, [0, 0.4, 1.0, 1.9, 3.4], [0.0, 0.5, 1.0, 0.75, 0.0])
-    out += G.applause(dur, r, 40, env) * 0.9
-    return fades(out, 0.05, 0.5)
+    t = tt(dur)
+    core = lp(colored(n, r, 0.62), 300) * (0.55 + 0.45 * np.sin(2 * np.pi * 4.2 * t) ** 2)
+    growl = modal(0.02, [(58, 1.0, 0.08), (117, 0.5, 0.04), (230, 0.3, 0.03)], r) + 0
+    en = core + 0.35 * lp(np.tile(growl, (n // len(growl)) + 1)[:n], 500, 1) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.27 * t))
+    a = 0.45 + 0.55 * smooth_noise(n, r, 0.55)
+    en *= a
+    return fades(pan(en, float(np.interp(t, [0, 2.5, 5.0, dur], [0.5, -0.4, 0.25, 0.6]))), 0.3, 0.6)
 
 
-def _bounces(r):
-    y = np.zeros(ns(0.6))
-    for k, (tm, a) in enumerate([(0.0, 1.0), (0.11, 0.45), (0.19, 0.25), (0.24, 0.12)]):
-        c = G.clink(r, r.uniform(2600, 3400), 0.12) * a
-        y[ns(tm): ns(tm) + len(c)] += c[: len(y) - ns(tm)]
-    return y
+def _bomber_bed(dur, r):
+    """far away big bomber: very low, slow, wide"""
+    n = ns(dur)
+    t = tt(dur)
+    x = lp(colored(n, r, 0.5), 160) * (0.6 + 0.4 * np.sin(2 * np.pi * 1.9 * t) ** 2)
+    return widen(fades(x, 0.8, 1.0), r, 14, 1.1)
 
 
-def _scuffle(r):
-    y = np.zeros((2, ns(0.6)))
-    for k in range(18):
-        s = G.stroll_step(r, r.uniform(0.6, 1.2)) * r.uniform(0.3, 1.0)
-        place(y, pan(s, r.uniform(-0.6, 0.6)), r.uniform(0, 0.3))
-    return y
+def _engine_chug(r, dur, g):
+    n = ns(dur)
+    t = tt(dur)
+    x = lp(colored(n, r, 0.6), 420) * np.sin(2 * np.pi * 15 * t) ** 2
+    return x * g
 
 
-def _whoas(r):
-    out = np.zeros((2, ns(0.75)))
-    for v in range(9):
-        w = G.whoa(r, dur=r.uniform(0.35, 0.5))
-        place(out, pan(w * r.uniform(0.4, 1.0), r.uniform(-0.8, 0.8)), r.uniform(0.0, 0.18))
-    return out
+def _cockpit_bed(dur, r):
+    n = ns(dur)
+    t = tt(dur)
+    hum = lp(colored(n, r, 0.65), 220) * (0.5 + 0.5 * np.sin(2 * np.pi * 3.9 * t) ** 2)
+    for tm in [1.9, 5.4]:
+        tick = G.clink(r, 2100, 0.05, bright=1.1)
+        place(hum, tick * 0.4, tm)
+    return fades(pan(hum, 0.25), 0.5, 0.8)
 
 
-def _splashes(r):
-    out = np.zeros((2, ns(2.8)))
-    for k, (p, g, dt) in enumerate([(0.0, 1.0, 0.0), (-0.55, 0.75, 0.025), (0.5, 0.7, 0.04), (-0.3, 0.55, 0.06), (0.35, 0.5, 0.075), (0.75, 0.35, 0.09)]):
-        s = G.splash_big(r)
-        if k:
-            s = lp(s, 9000, 1)
-        place(out, pan(s * g, p), dt)
-    return out
+def _bomb_whistle(dur, r):
+    """descending siren: pitch drops as the bomb slows (cartoon), slight warble"""
+    n = ns(dur)
+    t = tt(dur)
+    f = np.interp(t, [0, dur], [1650, 780])
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    s = np.sin(ph) * (0.6 + 0.4 * np.sin(2 * np.pi * 9 * t))
+    s = bp(s, 1200, 2800, 1.1) * fades(n, 0.05, 0.001)
+    return widen(s, r, 5, 0.7), 0.0
 
 
-def _oofs(r):
-    out = np.zeros((2, ns(0.9)))
-    kinds = ["oof", "oof", "ugh", "oh", "oof", "ow", "ugh", "oof", "oh", "oof", "ugh", "ow"]
-    for v, k in enumerate(kinds):
-        o = G.oof(r, k)
-        tm = abs(r.normal(0.06, 0.08)) + (0.0 if v < 5 else 0.1)
-        place(out, pan(o * r.uniform(0.45, 1.0), r.uniform(-0.85, 0.85)), min(tm, 0.45))
-    return out
-
-
-def _groans(r, parts):
-    out = np.zeros((2, ns(0.9)))
-    for tm, kd, g in parts:
-        o = G.oof(r, kd, base=r.uniform(90, 125), scale=r.uniform(0.95, 1.05))
-        place(out, pan(o * g, r.uniform(-0.6, 0.6)), tm)
-    return out
-
-
-def _debris(r):
-    out = np.zeros((2, ns(1.2)))
-    for k in range(7):
-        knock = modal(0.3, [(r.uniform(180, 320), 1.0, 0.04), (r.uniform(450, 900), 0.6, 0.02), (r.uniform(1200, 2400), 0.3, 0.01)], r)
-        sp = G.bubbles(0.3, r, 120, 400, 2200, (0.005, 0.02), np.exp(-tt(0.3) / 0.08)) * 0.5
-        place(out, pan((knock + sp) * r.uniform(0.3, 1.0), r.uniform(-0.8, 0.8)), r.uniform(0, 0.8))
-    return out
-
-
-# ================================================================ render
+# ================================================================ render (unchanged machinery)
 def render(v_ref, on_event=None):
-    """v_ref = integrated loudness of the voice stem (stereo). Returns (stereo stem, cue list with measured levels).
-    on_event(cue, x, t0) is called with every placed (dry) event, for analysis."""
+    """v_ref = integrated loudness of the voice stem (stereo). Returns (stereo stem, cue list with measured levels)."""
     C = cues()
     out = np.zeros((2, N))
     send = np.zeros(N)
     for c in C:
         x, anchor = c.gen()
         x = np.asarray(x, float)
-        x = pan(x, c.p) if x.ndim == 1 else x
+        if x.ndim == 1:
+            x = pan(x, c.p)
+        if x.ndim == 2 and x.shape[0] == 1:
+            x = np.vstack([x, x])
         if c.cut is not None:
             k = ns(c.cut - (c.t - anchor))
             if 0 < k < x.shape[1]:
@@ -336,13 +332,4 @@ def render(v_ref, on_event=None):
         c.measured = momentary_max(x) - v_ref if c.kind == "event" else integrated(x) - v_ref
         t0 = c.t - anchor
         place(out, x, t0)
-        if on_event:
-            on_event(c, x, t0)
-        if c.send > 0:
-            G._place_mono(send, c.send * x.mean(0), t0)
-    valley = make_ir(1.1, 77, pre=0.01, hf=1.6, early=[(0.09, 0.45, -0.5), (0.14, 0.3, 0.6), (0.23, 0.2, -0.2)])
-    out += 0.55 * convolve_st(send, valley)
-    out = hp(out, 25, 2)
-    end = ns(T.DUR - 0.12)
-    out[:, end:] *= np.linspace(1, 0, N - end)[None, :] ** 2
     return out, C

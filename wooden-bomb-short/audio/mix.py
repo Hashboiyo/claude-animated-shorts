@@ -22,23 +22,21 @@ CEIL_DBTP = -1.2                 # limiter ceiling (spec: true peak <= -1 dBTP)
 DUCK_DB = -3.0                   # music dip while the voice speaks (key = words.json, not the audio)
 
 # music level per section, LU relative to the voice in that section (after ducking); "+3 dB music" standard
-# (user standard: bed -10 instead of the old -13; sway/swing deliberately softer and warmer, rule/tourists leave room
-# for the hammer blows and the strolling footsteps)
-MUSIC_TARGET = {"hook": -9.5, "town": -10.5, "march": -10.0, "bounce": -10.0, "whistle": -9.5, "tension": -10.0,
-                "sway": -12.0, "swing": -11.5, "march2": -10.5, "rule": -11.5, "tourists": -11.0}
+# (user standard: bed -10; the comedy gag sections sit a hair lower so the gags stay pocket-sized)
+MUSIC_TARGET = {"hook": -9.5, "setting": -10.0, "build": -10.0, "shells": -10.0, "toy": -10.5, "mystery": -10.0,
+                "nobombs": -10.5, "hold": -14.0, "reveal": -12.0, "explain": -11.0, "decoywar": -10.5,
+                "punch": -9.5, "tail": -11.0}
 
-# music rides (start, end, dB): keep the quiet sentence-final words on top; the band blooms again in the gap after them
-DIPS = [(3.65, 4.30, -3.0),     # hook fill under "...walking across it."
-        (26.95, 27.36, -2.0),   # whistling column under "...every step."
-        (32.20, 32.77, -4.0),   # tension crescendo under "...breaks step." -> blooms into the dead stop before "Then,"
-        (61.25, 61.98, -3.0)]   # rule roll under "...in step." 
+# music rides (start, end, dB): keep the quiet sentence-final words on top
+DIPS = [(3.9, 4.28, -2.5),    # hook fill under "...a wooden bomb."
+        (34.0, 35.03, -2.5)]  # tension crescendo under "...exactly once." -> blooms into the dead stop on "Then,"
 
 # report sections = shots
 _s = lambda i: T.shot_t(i)
-REPORT = [("hook (1)", 0.0, _s(1)[1]), ("town (2)", *_s(2)), ("march (3)", *_s(3)), ("bounce (4-5)", _s(4)[0], _s(5)[1]),
-          ("whistle (6)", *_s(6)), ("groan (7)", *_s(7)), ("snap+fall (8)", *_s(8)), ("water (9-10)", _s(9)[0], _s(10)[1]),
-          ("sway (11)", *_s(11)), ("swing (12)", *_s(12)), ("march2 (13)", *_s(13)), ("rule (14)", *_s(14)),
-          ("tourists (15)", _s(15)[0], T.DUR)]
+REPORT = [("hook (1)", 0.0, _s(1)[1]), ("wreck (2)", *_s(2)), ("planks (3)", *_s(3)), ("build (4)", *_s(4)),
+          ("toy (5)", *_s(5)), ("gawk (6)", *_s(6)), ("party (7)", *_s(7)), ("cross (8)", *_s(8)),
+          ("circle (9)", *_s(9)), ("clonk (10)", *_s(10)), ("pilot (11)", *_s(11)), ("coat (12)", *_s(12)),
+          ("decoys (13)", *_s(13)), ("tail (14)", *_s(14)[0], T.DUR)]
 
 
 def log(*a):
@@ -99,25 +97,25 @@ def section_db(m_ducked, v):
     secs = music.SECTIONS
     gains = {}
     for name, a, b in secs:
-        if name == "dropout":
+        if name == "hold":
             continue
         seg = slice(ns(a), ns(b))
         Lm, Lv = integrated(m_ducked[:, seg]), integrated(v[:, seg])
         gains[name] = (Lv + MUSIC_TARGET[name] - Lm) if np.isfinite(Lm) else 0.0
-    gains["dropout"] = gains["tension"]          # the dead stop's hall tail decays at the tension level
-    # switch points: music is silent at the flash cut and at the end of the dropout, so those switch instantly
+    gains["hold"] = gains["nobombs"] - 3.0      # the fall is music-free except the swelling pad, one notch down
+    # switch points: music is silent at the flash cut and at the dead stop, so those switch instantly
     pts = []
     for i, (name, a, b) in enumerate(secs):
         pts.append((a, gains[name]))
     curve = np.zeros(N)
     t = np.arange(N) / SR
     for i, (a, g) in enumerate(pts):
-        a_eff = 43.1 if secs[i][0] == "sway" else a
+        a_eff = 42.6 if secs[i][0] == "reveal" else a
         curve[t >= a_eff] = g
-    # smooth the steps that fall inside music (0.4 s), keep the silent ones (flash, end of dropout) hard
+    # smooth the steps that fall inside music (0.4 s), keep the silent ones (flash, dead stop) hard
     sm = ndimage.uniform_filter1d(curve, ns(0.4), mode="nearest")
     hard = np.zeros(N, bool)
-    for tb in (T.FLASH, 43.1):
+    for tb in (T.FLASH, 35.04, 42.6):
         hard[ns(tb - 0.25): ns(tb + 0.25)] = True
     curve = np.where(hard, curve, sm)
     for a, b, db in DIPS:
@@ -285,7 +283,7 @@ def write_cues(C, b, st_, rows, eb, v_ref, G):
     vI = v_ref + G
     L = []
     w = L.append
-    w("# The Bridge That Fell for a Song - soundtrack cue sheet")
+    w("# The Wooden Bomb - soundtrack cue sheet")
     w("")
     w("All sound is original: synthesized in numpy/scipy by `sfx_gen.py` / `instruments.py`, placed by `sfx.py` / `music.py`, mixed by `mix.py`.")
     w("Voice = `voice/voice.wav`, gain only (no EQ, no compression, no pitch).")
@@ -293,7 +291,7 @@ def write_cues(C, b, st_, rows, eb, v_ref, G):
     w("## Files")
     w("| file | content |")
     w("|---|---|")
-    w("| `mix.wav` | final mix, 48 kHz, stereo, 24-bit, 3,240,000 samples = 67.500 s |")
+    w(f"| `mix.wav` | final mix, 48 kHz, stereo, 24-bit, {N:,} samples = {T.DUR:.3f} s |")
     w("| `stem_voice.wav` / `stem_music.wav` / `stem_sfx.wav` | stems at mix gain (they sum to the mix before the master limiter) |")
     w("")
     w("## Master loudness (own BS.1770-4 meter)")

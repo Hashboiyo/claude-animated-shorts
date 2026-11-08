@@ -428,10 +428,12 @@ export const buildField = (root: THREE.Object3D, kit: Kit, rays: Ray[] = []) => 
     const f = ["flower_redA", "flower_yellowA", "flower_purpleA"][i % 3];
     prop(b, kit, f, 62 + r() * 10, 0, (r() - 0.5) * 90, 0.5 + 0.2 * r());
   }
-  // the windmill far east (polder landmark for the aerials)
-  prop(b, kit, "windmill", 132, 0, -56, 18, -1.1);
-  // the farm cart and a bench (dressing the west field)
-  prop(b, kit, "cart", -66, 0, -20, 2.2, 0.8);
+  // two haystacks at the farm edge (polder dressing; procedural, no GLB kit needed)
+  const straw = lam("straw", () => ({ color: "#d9b565" }));
+  for (const [x, z, s] of [[-64, -52, 2.6], [-56.5, -55, 1.9]] as const) {
+    const cone = new THREE.ConeGeometry(s * 0.85, s, 12);
+    b.add(cone, straw, new THREE.Matrix4().makeTranslation(x, s * 0.5, z));
+  }
   b.build(root);
   sight = [];
 };

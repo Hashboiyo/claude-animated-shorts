@@ -380,11 +380,11 @@ export const focusAt = (id: number, f: number): V3 => {
   return d.focus ? d.focus(f) : camAt(id, f).look;
 };
 
-/** near framing objects: visible while a <= f < b; kit = a GLB name accepted by build.ts prop() */
+/** near framing objects: visible while a <= f < b; kit = a name accepted by build.ts prop()/kitClone() */
 export type Fg = { a: number; b: number; kit: string; pos: V3; s?: number; yaw?: number };
 export const FOREGROUND: Fg[] = [
-  // S3a: the cart in the bottom-left corner at ~2.6 m (sight ~6 m)
-  { a: 333, b: 393, kit: "cart", pos: [-11.2, 0, 10.6], s: 0.9, yaw: 0.35 },
+  // S3a: a hedge tuft in the bottom-left corner at ~2.6 m (sight ~6 m)
+  { a: 333, b: 393, kit: "hedge", pos: [-11.2, 0, 10.6], s: 1.35, yaw: 0.35 },
   // S14b: a bush in the bottom-left, clear of the bomb itself
   { a: 1897, b: 1957, kit: "plant_bushDetailed", pos: [3.4, 0, 3.6], s: 1.1, yaw: 0.5 },
 ];
