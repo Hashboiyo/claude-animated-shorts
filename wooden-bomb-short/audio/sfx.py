@@ -67,7 +67,7 @@ def cues():
 
     # ------------------------------------------------ hook: flash + early field cues
     add(Cue(T.FLASH, "flash_whoosh", "reverse swell into the white flash (frame 127) + soft low whoomp",
-            lambda: (_flash(rng(127)), -0.0), -5, send=0.2))
+            lambda: (_flash(rng(127)), 0.33), -5, send=0.2))
 
     # ------------------------------------------------ build beats: hammers + plank slides + the painter
     for shot, t1 in [(3, 15.0), (4, 20.0)]:
@@ -93,13 +93,13 @@ def cues():
                 -12, p=-0.35, lpf=7500, send=0.2, group="shells"))
     for tm in [16.2, 17.1, 18.0, 18.9]:
         add(Cue(tm, "saw", "a saw strokes through a plank",
-                (lambda r=rr(): (G.stick_slip(0.5, r.uniform(7.0, 8.6), r, 0.09, amp=0.55), 0.05)), -14, p=0.5,
+                (lambda r=rr(): (G.stick_slip(0.5, r.uniform(7.0, 8.6), r, 0.09) * 0.55, 0.05)), -14, p=0.5,
                 lpf=8500, send=0.15, group="saw"))
 
     # trucks + gun + tower + barrels pop (shot 4): wooden thocks + tyre roll
     for tm, nm in [(16.4, "truck 1 rolls in"), (17.0, "truck 2 follows"), (17.32, "gun pit drops"), (15.55, "watchtower drops")]:
         add(Cue(tm, "prop_thock", f"{nm}: timber thock + small rattle",
-                (lambda r=rr(): (G.wood_crack(r) * 0.5 + G.rattle(0.4, r, 14.0) * 0.5, 0.0)), -12, p=float(R.uniform(-0.6, 0.6)),
+                (lambda r=rr(): (_mix2(G.wood_crack(r) * 0.5, G.rattle(0.4, r, 14.0) * 0.5), 0.0)), -12, p=float(R.uniform(-0.6, 0.6)),
                 lpf=9000, send=0.2, group="props"))
     for k in range(7):  # the rail plane's engine pops in after the roll
         add(Cue(18.28 + k * 0.16, "engine_chug", "the wooden fighter's engine huff",
@@ -168,7 +168,7 @@ def cues():
     add(Cue(T.CLONK + 0.05, "splinters", "splinter shards scatter, clatter and stop",
             (lambda r=rr(): (G.rattle(1.0, r, 26.0, heavy=True), 0.0)), -10, p=0.2, lpf=12000, send=0.25))
     add(Cue(T.BOUNCE2, "clonk2", "second bounce, smaller: a wooden thud + two ticks",
-            (lambda r=rr(): (_hollow_thud(r, 0.42) + G.clink(r, r.uniform(1500, 1800), 0.07, bright=0.8), 0.0)),
+            (lambda r=rr(): (_mix2(_hollow_thud(r, 0.42), G.clink(r, r.uniform(1500, 1800), 0.07, bright=0.8)), 0.0)),
             -9, p=-0.1, lpf=9000, send=0.2))
     for tm in [43.75, 44.4]:
         add(Cue(tm, "birddrop", "a relieved blackbird phrase",
@@ -176,14 +176,14 @@ def cues():
 
     # ------------------------------------------------ the trench crew + the officer's walk (shot 10)
     add(Cue(T.CLONK + 0.08, "trench_pop", "the trench crew bursts up: boards and boots",
-            (lambda r=rr(): (G.rattle(0.5, r, 36.0) + G.stroll_step(r, 1.1) * 0.4, 0.0)), -12, p=-0.25, lpf=9000, send=0.2))
+            (lambda r=rr(): (_mix2(G.rattle(0.5, r, 36.0), G.stroll_step(r, 1.1) * 0.4), 0.0)), -12, p=-0.25, lpf=9000, send=0.2))
     for k in range(6):  # the officer walks the apron to the bomb
         tm = 43.2 + k * 0.33
         add(Cue(tm, "boot_step", "the officer's boot (greatcoat), approaching the bomb",
                 (lambda r=rr(): (G.stroll_step(r, 0.8), 0.0)), -13,
                 p=-0.35 + 0.11 * k, lpf=7500, send=0.18, group="officer_boots"))
     add(Cue(45.3, "dust_off", "two little dust-off brushes on the stencil band",
-            (lambda r=rr(): (G.stick_slip(0.4, 5.5, r, 0.04, amp=0.3), 0.05)), -16, p=0.15, lpf=8000, send=0.12))
+            (lambda r=rr(): (G.stick_slip(0.4, 5.5, r, 0.04) * 0.3, 0.05)), -16, p=0.15, lpf=8000, send=0.12))
 
     # ------------------------------------------------ the cockpit card (shot 11): soft engine close + blink tick
     add(Cue(47.1, "cockpit_air", "engine close-up under the card: warm hum + two instrument ticks",
@@ -194,7 +194,7 @@ def cues():
             lambda: (_bomber_bed(6.2, rng(5540)), 0.0), -18, p=-0.4, send=0.15, group="engine"))
     for k, th in enumerate(T.THUDS):
         add(Cue(th, "thud", f"bomb lands on the empty plywood field {k + 1}/4: distant wooden thump",
-                (lambda r=rr(): (_hollow_thud(r, 1.0, mid=62) + G.wood_crack(r) * 0.25, 0.0)),
+                (lambda r=rr(): (_mix2(_hollow_thud(r, 1.0, mid=62), G.wood_crack(r) * 0.25), 0.0)),
                 -6, p=float(np.clip((k % 2) * 0.5 - 0.25, -0.6, 0.6)), lpf=5200, send=0.3, group="thuds"))
         add(Cue(th + 0.35, "fire_flicker", "the decoy lamp flare answers the thud (small crackle)",
                 (lambda r=rr(): (G.rattle(0.5, r, 9.0) * 0.35, 0.0)), -20, p=0.5, lpf=6000, send=0.25, group="thuds"))
@@ -212,20 +212,46 @@ def _envlambda(gen, dur, fin, fout):
     return g
 
 
+def _place_mono(buf, x, t, gain=1.0):
+    """add mono x into mono buf starting at t (s); dsp.place needs a stereo buffer, so keep this small twin"""
+    x = np.asarray(x, float)
+    i = ns(t)
+    a, b = max(0, i), min(len(buf), i + len(x))
+    if b > a:
+        buf[a:b] += gain * x[a - i: b - i]
+
+
+def _mix2(*xs):
+    """sum mono signals of different lengths into a zero-padded buffer"""
+    y = np.zeros(max(len(x) for x in xs))
+    for x in xs:
+        y[:len(x)] += x
+    return y
+
+
+def _panm(x, pr):
+    """constant-power pan of mono x with a time-varying position pr (array, same sample grid)"""
+    th = (np.clip(np.asarray(pr, float), -1, 1) + 1) * np.pi / 4
+    return np.stack([x * np.cos(th), x * np.sin(th)]) * np.sqrt(2)
+
+
 # ================================================================ composite generators
 def _tok(r):
-    """wooden wheel on ties: a short two-surface tick"""
-    y = G.clink(r, r.uniform(480, 560), 0.05, bright=0.6) + 0.4 * lp(colored(ns(0.05), r, 0.7), 400)
-    y = np.concatenate([y, np.zeros(ns(0.02))])
-    y[ns(0.03):] += G.clink(r, r.uniform(430, 500), 0.05, bright=0.55) * 0.7
-    return y, 0.0
+    """wooden wheel on ties: a short two-surface tick (both surfaces on one sample grid)"""
+    n = ns(0.09)
+    y = np.zeros(n)
+    a = ns(0.05)
+    y[:a] += G.clink(r, r.uniform(480, 560), 0.05, bright=0.6)  # type: ignore[arg-type]
+    y[:a] += 0.4 * lp(colored(a, r, 0.7), 400)
+    y[ns(0.03):ns(0.03) + a] += G.clink(r, r.uniform(430, 500), 0.05, bright=0.55) * 0.7  # type: ignore[arg-type]
+    return y
 
 
 def _hollow_thud(r, g=1.0, mid=74):
-    """wooden-on-wooden landing: hollow body + short plank ring"""
+    """wooden-on-wooden landing: hollow body + short plank ring (both legs 0.45 s)"""
     t = tt(0.45)
     tone = (np.sin(2 * np.pi * mid * t) * np.exp(-t / 0.05) + 0.35 * np.sin(2 * np.pi * mid * 2.7 * t) * np.exp(-t / 0.035))
-    body = modal(0.3, [(mid * 1.1, 1.0, 0.05), (mid * 2.3, 0.5, 0.03)], r)
+    body = modal(0.45, [(mid * 1.1, 1.0, 0.05), (mid * 2.3, 0.5, 0.03)], r)
     return tone * g * 0.8 + body * g * 0.7
 
 
@@ -233,11 +259,10 @@ def _clonk(r):
     """the whole wooden-missile landing: nose clonk, forearm boing, splinter dust"""
     n = ns(1.6)
     out = np.zeros(n)
-    nose = _hollow_thud(r, 1.35, mid=74)
-    place(out, nose, 0.0)
+    _place_mono(out, _hollow_thud(r, 1.35, mid=74), 0.0)
     for k, (tm, a) in enumerate([(0.06, 0.5), (0.11, 0.3), (0.17, 0.18)]):
-        place(out, G.clink(r, r.uniform(300, 420) - k * 40, 0.09, bright=0.5) * a, tm)
-    place(out, lp(G.whoosh(0.4, r, 0.2, 140, 900, 0.9, 0.1, 0.0), 1100, 1) * 0.55, 0.12)
+        _place_mono(out, G.clink(r, r.uniform(300, 420) - k * 40, 0.09, bright=0.5) * a, tm)
+    _place_mono(out, lp(G.whoosh(0.4, r, 0.2, 140, 900, 0.9, 0.1, 0.0), 1100, 1) * 0.55, 0.12)
     return out
 
 
@@ -246,7 +271,7 @@ def _flash(r):
     y = G.whoosh(dur, r, 0.33, 500, 4200, 0.9, 0.09, 0.4)  # type: ignore[arg-type]
     t = tt(dur)
     boom = np.where(t > 0.33, np.exp(-(t - 0.33) / 0.12) * np.sin(2 * np.pi * 62 * (t - 0.33)), 0) * 0.8
-    return widen(y + boom, r, 12, 0.9), 0.33
+    return fades(y + boom, 0.004, 0.05)  # mono; render() pans it; anchor set at the cue site
 
 
 def _photo_pass(dur, r):
@@ -255,7 +280,8 @@ def _photo_pass(dur, r):
     t = tt(dur)
     drone = lp(colored(n, r, 0.55), 340) * (0.5 + 0.5 * np.sin(2 * np.pi * 3.1 * t) ** 2)
     sweep = G.whoosh(dur, r, 0.5, 300, 2400, 0.85, 0.35, 0.3)  # type: ignore[arg-type]
-    return pan(drone, float(np.interp(t, [0, dur * 0.45, dur], [-0.7, -0.2, 0.75]))) + sweep * 0.7
+    pr = np.interp(t, [0, dur * 0.45, dur], [-0.7, -0.2, 0.75])
+    return _panm(drone, pr) + st(sweep * 0.7)
 
 
 def _engine_bed(dur, r):
@@ -267,7 +293,8 @@ def _engine_bed(dur, r):
     en = core + 0.35 * lp(np.tile(growl, (n // len(growl)) + 1)[:n], 500, 1) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.27 * t))
     a = 0.45 + 0.55 * smooth_noise(n, r, 0.55)
     en *= a
-    return fades(pan(en, float(np.interp(t, [0, 2.5, 5.0, dur], [0.5, -0.4, 0.25, 0.6]))), 0.3, 0.6)
+    pr = np.interp(t, [0, 2.5, 5.0, dur], [0.5, -0.4, 0.25, 0.6])
+    return fades(_panm(en, pr), 0.3, 0.6)
 
 
 def _bomber_bed(dur, r):
@@ -290,8 +317,10 @@ def _cockpit_bed(dur, r):
     t = tt(dur)
     hum = lp(colored(n, r, 0.65), 220) * (0.5 + 0.5 * np.sin(2 * np.pi * 3.9 * t) ** 2)
     for tm in [1.9, 5.4]:
-        tick = G.clink(r, 2100, 0.05, bright=1.1)
-        place(hum, tick * 0.4, tm)
+        tick = G.clink(r, 2100, 0.05, bright=1.1)  # type: ignore[arg-type]
+        k = min(ns(tm), n - len(tick))
+        if 0 <= k:
+            hum[k:k + len(tick)] += tick * 0.4
     return fades(pan(hum, 0.25), 0.5, 0.8)
 
 
@@ -302,8 +331,8 @@ def _bomb_whistle(dur, r):
     f = np.interp(t, [0, dur], [1650, 780])
     ph = 2 * np.pi * np.cumsum(f) / SR
     s = np.sin(ph) * (0.6 + 0.4 * np.sin(2 * np.pi * 9 * t))
-    s = bp(s, 1200, 2800, 1.1) * fades(n, 0.05, 0.001)
-    return widen(s, r, 5, 0.7), 0.0
+    s = bp(s, 1200, 2800, 1) * fades(np.ones(n), 0.05, 0.001)
+    return widen(s, r, 5, 0.7)
 
 
 # ================================================================ render (unchanged machinery)

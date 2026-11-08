@@ -337,10 +337,10 @@ export class World {
     M.runEdge = lam("runEdge", () => ({ map: runwayEdge() }));
     b.add(gQuad(-330, 600, -600, 600, 36, 36), M.grass);
     b.add(gQuad(-60, 60, 22.6, 26.6, 30, 1), M.cobble);
-    for (let i = 0; i < 7; i++) {
-      const g = new THREE.BoxGeometry(1.6 + (i % 3) * 0.5, 0.12, 0.4);
-      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.02, i * 1.7, 0.05));
-      b.add(g, M.airwood, new THREE.Matrix4().compose(V(-38 + (i * 3.1) % 24, 0.08, -6 + ((i * 4.7) % 12)), q, V(1, 1, 1)));
+    for (let i = 0; i < 4; i++) {
+      const g = new THREE.BoxGeometry(1.15 + (i % 3) * 0.35, 0.1, 0.35);
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.01, i * 1.9, 0.03));
+      b.add(g, M.airwood, new THREE.Matrix4().compose(V(-34 + i * 4.2, 0.032, (i % 2 ? 1 : -1) * (7.6 + 0.9 * i)), q, V(1, 1, 1)));
     }
     b.build(R);
     buildField(R, kit, sightLines());
@@ -699,7 +699,9 @@ export class World {
     this.bomb.visible = !hook && q.phase !== "held";
     if (this.bomb.visible) {
       this.bomb.position.set(q.x, q.y, q.z);
-      this.bomb.rotation.set(q.roll, 0, q.pitch);
+      // rest yaw turns the stencil band's centre to the lens: the officer read (shot 10, yaw 1.08) and the final
+      // push-in (shot 14, yaw 0.55) both sit east of north, so 0.80 rad splits them (text band ~25 deg wide reads in both)
+      this.bomb.rotation.set(q.roll, q.phase === "rest" ? 3.94 : 0, q.pitch);
     }
     const sa = splinterAge(t);
     this.splints.visible = sa > 0.006 && sa < 1;
