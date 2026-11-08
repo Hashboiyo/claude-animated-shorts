@@ -8,8 +8,15 @@ Everything below is on disk; nothing lives only in chat.
 ## Where we are in the pipeline (3-gate workflow per AGENTS.md)
 
 - **Gate 1 (script): APPROVED** — `wooden-bomb-short/SCRIPT.md` (16 lines, ~257 words, jokes fact-checked).
-- **Gate 2 (stills/contact sheet QA): IN PROGRESS — NOT presented to the user yet.**
-- **Gate 3 (cloud render): NOT started.** Never render the full video locally (AGENTS.md rule).
+- **Gate 2 (stills/contact sheet QA): APPROVED.** Contact sheet `out/wooden-sheet/contact.png` (18 stills, all
+  14 shots). 4 issues found + user approved "fix the 4 issues, then render"; ALL FIXED and re-verified in
+  `out/fixcheck*/`: (1) coat card readable (world.ts coatPoster: brighter walls/coat, warm door rim, floor
+  pool), (2) planks → 4 smaller grounded props, (3) dawn magenta cast tamed (lights.ts golden lit/charTint/
+  sunI + grade.ts GRADE_GOLDEN2 desaturated), (4) bomb rest yaw 3.94 rad puts the WOOD FOR WOOD stencil
+  band in the lens for the shot-10 officer read and the shot-14 final push-in (verified f2030).
+- **Gate 3 (cloud render): DISPATCHED** — GitHub Actions run **42508598918**
+  (`render-video.yml`, WoodenBomb, 8 chunks, crf 18, audio `public/audio/wooden-mix.wav`, release tag
+  `wooden-bomb-v1`). Final MP4 expected as release artifact — never render locally (AGENTS.md rule).
 
 Voice is locked and generated: `wooden-bomb-short/voice/voice.wav` (48 kHz, 66.07 s,
 `en-GB-RyanNeural` at +42% rate) + `voice/words.json` (232 word timestamps).
@@ -46,7 +53,8 @@ merging tone+grade into one pass blanked the render, so tone and grade each get 
 - **Fix:** drive the raw `postprocessing` `EffectComposer` by hand. `post.ts` builds
   `RenderPass → InkPass → lens.pre → lens.main → bloom → NEUTRAL tone → grade` with `multisampling: 0`,
   and `WoodenBomb.tsx` calls `chain.render()` inside `useFrame(..., 1)` (priority 1 = R3F never
-  auto-renders). A/B toggles still work via inputProps `{ post: { ink:false, lens:false, ... } }`.
+  auto-renders). **NEVER set `enabled=false` on any pass at runtime** — disabling ANY pass (even grain)
+  blanked the composer; all passes stay on, every frame. One effect per `EffectPass` is mandatory.
 - **Verified working:** frames 0/400/760 render with real content (stdev 66–79; previously 0.00).
   Still-0400 shows sky, field, runway edge and the shot-5 cast standing at their BUILD positions — all correct placement.
 - Do **not** switch back to `<EffectComposer>` from `@react-three/postprocessing`.
@@ -73,27 +81,31 @@ the repo workflow fetches the kit (see `.github/workflows/stills.yml` / `render-
 download script) or whether `loadKit()` in `build.ts` falls back to procedural shapes; mirror whatever
 the cloud workflow does locally. `FOREGROUND` cart was already swapped to `hedge`.
 
-## Audio pipeline (adapted, not yet end-to-end rendered)
+## Audio pipeline (DONE — mixed end-to-end, 2026-11-08)
 
 `wooden-bomb-short/audio/` (copies of the bridge templates, now edited for Wooden Bomb):
 - `timeline.py` — REWRITTEN for this film (shots 1–14 from story.ts, XFADE, hammer grids, rail_x,
   cam_distance, DUR=68.0). `words()` returns `[{w, s, e}]` mapped from words.json.
 - `music.py` — REWRITTEN (same instrument machinery; sections hook→setting→build→shells→toy→mystery→
   nobombs→hold(40.3 pad swell)→reveal→explain→decoywar→punch→tail). `music import ok` confirmed.
-- `sfx.py` — REWRITTEN (109 cues: amb beds, hammers, painter, shells, rail squeaks, shutters, mugs,
-  engine bed, fall whistle, `_hollow_thud`/`_clonk`, trench pop, officer boots, thuds, tail tick).
-  **Verify import again** after the walrus-operator fix and the `G.hollow_thud` → `_hollow_thud` sweep;
-  also confirm every `G.*` used (breeze, bird_chirps, crickets, swing_squeak, stroll_step, hammer_hit…
-  ) exists in `sfx_gen.py`.
-- `mix.py` — adapted (MUSIC_TARGET/section names, DIPS, REPORT, write_cues header, section_db hard switches at
-  T.FLASH/35.04/42.6; a `*_s(14)[0]` tuple-spread typo was fixed). **Still to check:** any remaining
-  bridge-specific word cue logic, sfx call signature (`sfx.render(v_ref)`), stem naming, LUFS -15 / -1.2 dBTP.
+- `sfx.py` — REWRITTEN and **fully fixed 2026-11-08**. The composite helpers were re-grounded against the
+  real dsp/sfx_gen signatures; rules of thumb now proven: `widen()` is MONO-in → stereo-out; `place()`
+  needs a (2,N) buffer (use `sfx._place_mono` for mono bufs); `stick_slip(amp=)` wants an ARRAY (or drop
+  it and scale the result); `bp(..., order)` order must be an int; `dsp.fades()` needs an ARRAY (never
+  a scalar int); `stroll_step` is a fixed 0.3 s mono step; `clink(dur)` returns exactly `ns(dur)`;
+  **composite generators must return the sound only — the Cue lambda sets the anchor — or you get nested
+  `(sound, anchor)` tuples** (that was the last "inhomogeneous shape (2,)" bug). All ~120 cues verified
+  shape/finite clean.
+- `mix.py` — adapted (MUSIC_TARGET/section names, DIPS, REPORT, write_cues header, section_db hard
+  switches at T.FLASH/35.04/42.6). **Rendered:** master −15.0 LUFS integrated, peak −1.2 dBFS, all
+  stems finite (the "TP nan dBTP" in the log is a measurement artifact; files verified NaN-free and
+  peak-clean by decode). Local `ffmpeg` missing → the workflow's own ffprobe QA is its substitute.
 - `dsp.py`, `instruments.py`, `sfx_gen.py` — template machinery, unchanged.
 - numpy/scipy are installed (`python -m pip install --user` worked; exit code noise is expected).
 
-**Next audio step:** run `python mix.py` (from repo root, as the templates expect) → produces
-`wooden-bomb-short/audio/mix.wav` + stems + cues.md. Then reference `mix.wav` in WoodenBomb.tsx as
-`<Audio src>` (`public/audio/wooden-mix.wav`) — not done yet, currently only voice wiring is planned.
+**Delivered:** `wooden-bomb-short/audio/mix.wav` (68 s @ 48 kHz stereo 24-bit) + stems + cues.md, copied
+to `public/audio/wooden-mix.wav` and pushed; the cloud render muxes it. WoodenBomb.tsx does NOT need an
+`<Audio>` tag — the workflow muxes master audio in the assemble stage.
 
 ## Tooling quirks (Windows)
 
