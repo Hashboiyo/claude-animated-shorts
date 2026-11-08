@@ -19,10 +19,6 @@ import { PostChain } from "./post";
 
 export const WOODEN_FRAMES = TOTAL;
 
-/** A/B switches for test stills only (Remotion inputProps `{ post: { ink: false, ... } }`); everything is on by default. */
-type PostToggles = { ink: boolean; lens: boolean; pre: boolean; bloom: boolean; grade: boolean; grain: boolean };
-const toggles = (): PostToggles => ({ ink: true, lens: true, pre: true, bloom: true, grade: true, grain: false, ...((getInputProps() as { post?: Partial<PostToggles> }).post ?? {}) });
-
 const fwd = new THREE.Vector3(), fpt = new THREE.Vector3();
 
 const useKit = () => {
@@ -37,17 +33,9 @@ const Inner: React.FC<{ id: number; kit: Kit }> = ({ id, kit }) => {
   const { camera, scene, gl } = useThree();
   const world = useMemo(() => new World(kit), [kit]);
   const target = useMemo(() => new THREE.Vector3(), []);
-  const on = useMemo(toggles, []);
   const chain = useMemo(() => new PostChain(gl, scene, camera as THREE.PerspectiveCamera), [gl, camera, scene]);
   useEffect(() => () => chain.dispose(), [chain]);
-  useEffect(() => {
-    chain.ink.enabled = on.ink;
-    chain.prePass.enabled = on.lens && on.pre;
-    chain.mainPass.enabled = on.lens;
-    chain.bloomPass.enabled = on.bloom;
-    chain.gradePass.enabled = on.grade;
-    chain.grainPass.enabled = on.grain;
-  }, [chain, on]);
+  // NOTE: no pass.enabled toggling here — a disabled pass blanks the whole composer on this stack (see post.ts).
   const cam = camera as THREE.PerspectiveCamera;
   const size = useMemo(() => new THREE.Vector2(), []);
   useFrame(() => {

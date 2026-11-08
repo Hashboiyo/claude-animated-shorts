@@ -32,8 +32,9 @@ Composition: **`WoodenBomb`, 2040 frames @ 30 fps, 1080x1920** (registered in `s
 - **`WoodenBomb.tsx` + `post.ts` (NEW, critical)** — see the bug section below.
 
 Last typecheck: **0 errors** on the final state (post.ts toggles act on the wrapping `EffectPass`
-objects — `Effect` subclasses have no `enabled`; lens.pre + lens.main are one EffectPass each and
-tone+grade share `gradePass`). If future edits re-introduce errors, candidates: `dofAt(f).focus`
+objects — `Effect` subclasses have no `enabled`; ONE EFFECT PER EffectPass is mandatory on this stack:
+merging tone+grade into one pass blanked the render, so tone and grade each get their own pass:
+`tonePass` / `gradePass`). If future edits re-introduce errors, candidates: `dofAt(f).focus`
 3-spread (exists in story.ts), `LensBlur` fields `pre`/`main`/`focus`/`cInf`, `gradeFor` signature,
 `chain.lens.dispose()` existence.
 
@@ -84,9 +85,9 @@ the cloud workflow does locally. `FOREGROUND` cart was already swapped to `hedge
   **Verify import again** after the walrus-operator fix and the `G.hollow_thud` → `_hollow_thud` sweep;
   also confirm every `G.*` used (breeze, bird_chirps, crickets, swing_squeak, stroll_step, hammer_hit…
   ) exists in `sfx_gen.py`.
-- `mix.py` — PARTIALLY adapted: MUSIC_TARGET/section names, DIPS, REPORT, write_cues header, section_db
-  (hard switches at T.FLASH/35.04/42.6). **Still to check:** any remaining bridge-specific word cue
-  logic, sfx call signature (`sfx.render(v_ref)`), stem naming, LUFS target -15, ceiling -1.2 dBTP.
+- `mix.py` — adapted (MUSIC_TARGET/section names, DIPS, REPORT, write_cues header, section_db hard switches at
+  T.FLASH/35.04/42.6; a `*_s(14)[0]` tuple-spread typo was fixed). **Still to check:** any remaining
+  bridge-specific word cue logic, sfx call signature (`sfx.render(v_ref)`), stem naming, LUFS -15 / -1.2 dBTP.
 - `dsp.py`, `instruments.py`, `sfx_gen.py` — template machinery, unchanged.
 - numpy/scipy are installed (`python -m pip install --user` worked; exit code noise is expected).
 

@@ -1,6 +1,7 @@
 // The post chain for "The Wooden Bomb", driven by the raw `postprocessing` EffectComposer instead of the R3F
 // wrapper (multi-pass rendering inside the R3F wrapper is broken on this swangle stack: any composer with >= 2
-// passes rendered a transparent canvas silently, verified pass-by-pass on frame-0 probes).
+// passes rendered a transparent canvas silently, verified pass-by-pass on frame-0 probes). EMPIRICAL RULE for the
+// raw composer too: each EffectPass must hold EXACTLY ONE effect (tone+grade merged in one pass blanked as well).
 // Chain (identical to the bridge house style): RenderPass -> InkPass (own world-only normals pass) -> lens pre ->
 // lens main -> bloom (emissive only) -> NEUTRAL tone map -> display-referred grade. MSAA off (swangle-safe); the
 // ink pass does its own tent-AA and the DOF handles edges softly.
@@ -30,6 +31,7 @@ export class PostChain {
   readonly prePass: EffectPass;
   readonly mainPass: EffectPass;
   readonly bloomPass: EffectPass;
+  readonly tonePass: EffectPass;
   readonly gradePass: EffectPass;
   readonly grainPass: EffectPass;
 
@@ -44,23 +46,19 @@ export class PostChain {
     this.prePass = new EffectPass(camera, this.lens.pre);
     this.mainPass = new EffectPass(camera, this.lens.main);
     this.bloomPass = new EffectPass(camera, this.bloom);
-    this.gradePass = new EffectPass(camera, this.tone, this.grade);
+    this.tonePass = new EffectPass(camera, this.tone);
+    this.gradePass = new EffectPass(camera, this.grade);
     this.grainPass = new EffectPass(camera, this.grain);
     this.composer.addPass(new RenderPass(scene, camera));
     this.composer.addPass(this.ink);
     this.composer.addPass(this.prePass);
     this.composer.addPass(this.mainPass);
     this.composer.addPass(this.bloomPass);
+    this.composer.addPass(this.tonePass);
     this.composer.addPass(this.gradePass);
     this.composer.addPass(this.grainPass);
-    // A/B toggles for test stills (inputProps { post: { ink/lens/pre/bloom/grade/grain } }); everything else stays on.
-    const on = (globalThis as unknown as { __post?: { ink?: boolean; lens?: boolean; pre?: boolean; bloom?: boolean; grade?: boolean; grain?: boolean } }).__post ?? {};
-    this.ink.enabled = on.ink ?? true;
-    this.prePass.enabled = (on.lens ?? true) && (on.pre ?? true);
-    this.mainPass.enabled = on.lens ?? true;
-    this.bloomPass.enabled = on.bloom ?? true;
-    this.gradePass.enabled = on.grade ?? true;
-    this.grainPass.enabled = on.grain ?? false;
+    // NOTE: do NOT set `enabled = false` on any pass at runtime on this swangle stack — a disabled pass
+    // blanks the whole composer (verified). A/B toggles are unavailable until re-verified; keep all on.
   }
 
   /** resize to the output canvas' backbuffer size (called on creation and on resize) */

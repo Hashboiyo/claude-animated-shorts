@@ -36,7 +36,7 @@ _s = lambda i: T.shot_t(i)
 REPORT = [("hook (1)", 0.0, _s(1)[1]), ("wreck (2)", *_s(2)), ("planks (3)", *_s(3)), ("build (4)", *_s(4)),
           ("toy (5)", *_s(5)), ("gawk (6)", *_s(6)), ("party (7)", *_s(7)), ("cross (8)", *_s(8)),
           ("circle (9)", *_s(9)), ("clonk (10)", *_s(10)), ("pilot (11)", *_s(11)), ("coat (12)", *_s(12)),
-          ("decoys (13)", *_s(13)), ("tail (14)", *_s(14)[0], T.DUR)]
+          ("decoys (13)", *_s(13)), ("tail (14)", _s(14)[0], T.DUR)]
 
 
 def log(*a):
