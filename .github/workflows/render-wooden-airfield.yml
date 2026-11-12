@@ -1,0 +1,92 @@
+name: Render Wooden Airfield
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/wooden-airfield-narration-20261112
+    paths:
+      - 'wooden-airfield/**'
+      - '.github/workflows/render-wooden-airfield.yml'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: wooden-airfield
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.chunks.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: chunks
+        run: node scripts/chunks.mjs >> "$GITHUB_OUTPUT"
+
+  render:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: wooden-airfield/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - name: Download Chrome Headless Shell
+        run: npx remotion browser ensure
+      - name: Render video chunk
+        env:
+          CHUNK_INDEX: ${{ matrix.chunk.index }}
+          START_FRAME: ${{ matrix.chunk.from }}
+          END_FRAME: ${{ matrix.chunk.to }}
+        run: >-
+          npx remotion render src/index.tsx WoodenAirfield
+          "out/chunk-${CHUNK_INDEX}.mp4"
+          --frames="${START_FRAME}-${END_FRAME}"
+          --muted
+      - uses: actions/upload-artifact@v4
+        with:
+          name: render-chunk-${{ matrix.chunk.index }}
+          path: wooden-airfield/out/chunk-${{ matrix.chunk.index }}.mp4
+          if-no-files-found: error
+          retention-days: 3
+
+  assemble:
+    needs: render
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: render-chunk-*
+          path: wooden-airfield/out
+          merge-multiple: true
+      - name: Ensure FFmpeg is available
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Combine chunks and add narration
+        run: node scripts/assemble.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wooden-airfield-video
+          path: wooden-airfield/out/wooden-airfield.mp4
+          if-no-files-found: error
+          retention-days: 14

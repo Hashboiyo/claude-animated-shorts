@@ -1,0 +1,30 @@
+{
+  "name": "wooden-airfield",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio src/index.tsx",
+    "typecheck": "tsc --noEmit",
+    "render": "remotion render src/index.tsx WoodenAirfield out/wooden-airfield.mp4",
+    "postinstall": "node scripts/patch-remotion-gl.mjs"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.8.2",
+    "@remotion/cli": "4.0.540",
+    "@remotion/three": "4.0.540",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.540",
+    "three": "0.181.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.181.0",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
